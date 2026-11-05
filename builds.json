@@ -1,0 +1,11 @@
+{
+  "earlier": [
+    { "title": "Tidepool", "blurb": "Neural-network creatures evolve in a simulated tidepool.", "url": "https://s1lvf1sh.github.io/tidepool/", "repo": "https://github.com/s1lvf1sh/tidepool", "date": "2026-10-30", "rating": 3.2 },
+    { "title": "Atlas of Elsewhere", "blurb": "Maps of invented islands with real physics and a generated language.", "url": "https://s1lvf1sh.github.io/atlas-of-elsewhere/", "repo": "https://github.com/s1lvf1sh/atlas-of-elsewhere", "date": "2026-10-31", "rating": 3.8 },
+    { "title": "Terrarium", "blurb": "Plants, rabbits and foxes in a terminal ecosystem.", "url": "https://s1lvf1sh.github.io/terrarium/", "repo": "https://github.com/s1lvf1sh/terrarium", "date": "2026-10-31", "rating": 2.7 },
+    { "title": "Gradus", "blurb": "A counterpoint composer that explains every note and sings it.", "url": "https://s1lvf1sh.github.io/gradus/", "repo": "https://github.com/s1lvf1sh/gradus", "date": "2026-10-31", "rating": 3.7 },
+    { "title": "Let's Play God", "blurb": "A Linux god game with simulated tribes, wildlife and ecology (local only).", "url": null, "repo": null, "date": "2026-11-01", "rating": 3.7 },
+    { "title": "Rewind", "blurb": "A small language with a time-travelling debugger.", "url": "https://s1lvf1sh.github.io/rewind/", "repo": "https://github.com/s1lvf1sh/rewind", "date": "2026-11-02", "rating": 3.8 }
+  ],
+  "daily": []
+}

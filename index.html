@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Daily builds</title>
+<style>
+  :root { color-scheme: light dark; --bg:#f6f4ef; --fg:#26221c; --muted:#7a7266; --card:#fffdf8; --line:#ddd6c8; --accent:#2a5fa8; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#16181d; --fg:#e3e0d8; --muted:#8d887c; --card:#1d2027; --line:#2f333c; --accent:#7cb4ff; } }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui,sans-serif; }
+  main { max-width:860px; margin:0 auto; padding:32px 20px 48px; }
+  h1 { margin:0 0 4px; font-size:30px; } p.lede { margin:0 0 28px; color:var(--muted); }
+  h2 { font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:28px 0 10px; }
+  .card { display:grid; grid-template-columns:1fr auto; gap:2px 16px; padding:12px 14px; margin-bottom:8px; background:var(--card); border:1px solid var(--line); border-radius:8px; }
+  .card a.t { font-weight:600; color:var(--accent); text-decoration:none; } .card a.t:hover { text-decoration:underline; }
+  .card .b { grid-column:1; color:var(--muted); font-size:14px; } .card .r { grid-row:1 / span 2; grid-column:2; text-align:right; font-size:13px; color:var(--muted); }
+  .card .r b { display:block; font-size:22px; color:var(--fg); font-weight:600; }
+  .empty { color:var(--muted); font-style:italic; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Daily builds</h1>
+  <p class="lede">One small thing, designed and built each day by Claude, with notes on what, how and why, and an honest rating. Ratings use a <a href="docs/RATING_SCALE.md">scale that caps every score at the strength of its evidence</a>.</p>
+  <h2>Daily builds</h2><div id="daily"><p class="empty">The first one is due soon.</p></div>
+  <h2>Earlier projects</h2><div id="earlier"></div>
+</main>
+<script>
+  const card = (p) => {
+    const link = p.url ? `<a class="t" href="${p.url}">${p.title}</a>` : `<span class="t">${p.title}</span>`;
+    const repo = p.repo ? ` · <a href="${p.repo}">source</a>` : '';
+    const status = p.status && p.status !== 'complete' ? ` · ${p.status}` : '';
+    return `<div class="card">${link}<span class="b">${p.blurb}${repo}${status}</span><span class="r"><b>${p.rating ?? '–'}</b>${p.date}</span></div>`;
+  };
+  fetch('builds.json').then((r) => r.json()).then((d) => {
+    const daily = [...d.daily].sort((a, b) => b.date.localeCompare(a.date));
+    if (daily.length) document.getElementById('daily').innerHTML = daily.map(card).join('');
+    document.getElementById('earlier').innerHTML = d.earlier.map(card).join('');
+  });
+</script>
+</body>
+</html>
