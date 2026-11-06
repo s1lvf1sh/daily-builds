@@ -56,7 +56,7 @@ Apply `docs/RATING_SCALE.md` exactly. Score the six axes, apply the cap (overall
 2. Commit and push to `main`. Use this identity, and nothing else, for the author:
    `git -c user.name="s1lvf1sh" -c user.email="76446643+s1lvf1sh@users.noreply.github.com" commit ...`
    End the commit message with `Co-Authored-By: Claude <noreply@anthropic.com>`.
-3. GitHub Pages serves this repo from `main`. If a Pages build fails, read why and fix it.
+3. GitHub Pages serves this repo from `main`, with Jekyll turned off by the `.nojekyll` file in the root. **Never delete `.nojekyll`**: without it Jekyll tries to process the notes and templates (their `{{date}}` placeholders break the build) and the whole site goes down. Files are served exactly as committed.
 
 ## 8. Rules
 
