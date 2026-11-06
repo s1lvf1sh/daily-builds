@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cronwise</title>
+<style>
+:root{--bg:#fbfaf7;--fg:#1d2330;--mut:#667085;--card:#fff;--line:#dcd8cc;--acc:#1f6f5c;--hot:#1f6f5c;--err:#b42318}
+@media (prefers-color-scheme:dark){:root{--bg:#141820;--fg:#e8e6df;--mut:#98a2b3;--card:#1b212c;--line:#2f3846;--acc:#5cc8a8;--hot:#5cc8a8;--err:#ff8a7a}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:24px 16px 48px}h1{margin:0;font-size:1.6rem}.sub{color:var(--mut);margin:.2rem 0 1.2rem}
+input{width:100%;font:1.3rem ui-monospace,Menlo,monospace;padding:.6rem .8rem;border:2px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);letter-spacing:.04em}
+input:focus{outline:none;border-color:var(--acc)}input[aria-invalid=true]{border-color:var(--err)}
+.fields{display:grid;grid-template-columns:repeat(5,1fr);font-size:.75rem;color:var(--mut);margin:.3rem .1rem 1rem;gap:4px;text-align:left}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 1rem}.chips button{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:99px;padding:.2rem .7rem;cursor:pointer}
+.chips button:hover{border-color:var(--acc)}
+#says{font-size:1.2rem;margin:.5rem 0 1rem;min-height:2em}#says.err{color:var(--err)}
+h2{font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin:1.5rem 0 .5rem}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}td,th{padding:.25rem .5rem;border-bottom:1px solid var(--line);text-align:left;font-weight:400}th{color:var(--mut);font-size:.8rem}
+.grid{display:grid;grid-template-columns:2.2rem repeat(24,1fr);gap:2px;font-size:.65rem;color:var(--mut)}
+.grid i{display:block;aspect-ratio:1;border-radius:2px;background:var(--line);opacity:.45}.grid i.on{background:var(--hot);opacity:1}.grid span{align-self:center}
+.hrs{display:grid;grid-template-columns:2.2rem repeat(24,1fr);gap:2px;font-size:.6rem;color:var(--mut);margin-top:2px}.hrs b{font-weight:400;text-align:left;grid-column:span 6}
+.note{color:var(--mut);font-size:.85rem}footer{margin-top:2rem;color:var(--mut);font-size:.8rem}
+</style></head><body><main>
+<h1>Cronwise</h1>
+<p class="sub">Type a cron expression. Get plain English, the next run times, and the shape of a typical week. Everything is computed in your browser, in UTC.</p>
+<label for="expr" class="note">Cron expression (5 fields, or @daily, @hourly, …)</label>
+<input id="expr" value="0 9 * * 1-5" spellcheck="false" autocomplete="off" aria-describedby="says">
+<p class="note" style="margin:.3rem 0 1rem">minute · hour · day of month · month · day of week</p>
+<div class="chips" id="chips"></div>
+<div id="says" role="status" aria-live="polite"></div>
+<div id="out">
+<h2>Next runs</h2>
+<table><thead><tr><th>#</th><th>UTC</th><th>Your time</th><th>From now</th></tr></thead><tbody id="runs"></tbody></table>
+<h2>A typical week (UTC), each square is one hour</h2>
+<div class="grid" id="grid" role="img" aria-label="Weekly firing pattern"></div><div class="hrs" id="hrs"></div>
+<p class="note" id="wk"></p>
+</div>
+<footer>Standard 5-field cron, UTC only. If both day-of-month and day-of-week are restricted, either one triggers a run (Vixie cron behaviour). Not for Quartz, AWS or other dialects with extra fields or symbols like L, W and #.</footer>
+</main>
+<script src="src/cron.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+const EX = ['*/15 * * * *','0 9 * * 1-5','30 2 1 * *','0 0 13 * 5','0 */6 * * *','0 8,20 * * MON,THU','0 0 29 2 *','@weekly'];
+$('chips').innerHTML = EX.map((e) => `<button type="button">${e}</button>`).join('');
+$('chips').onclick = (ev) => { if (ev.target.tagName === 'BUTTON') { $('expr').value = ev.target.textContent; render(); } };
+const iso = (d) => d.toISOString().slice(0, 16).replace('T', ' ');
+const loc = (d) => d.toLocaleString([], { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+function rel(ms) {
+  const m = Math.round(ms / 60000); if (m < 60) return `${m} min`;
+  const h = Math.floor(m / 60); if (h < 48) return `${h} h ${m % 60} min`;
+  const d = Math.floor(h / 24); return d < 120 ? `${d} days` : `${Math.round(d / 30.4)} months`;
+}
+function render() {
+  const el = $('expr'), says = $('says');
+  let c;
+  try { c = Cron.parse(el.value); } catch (e) {
+    el.setAttribute('aria-invalid', 'true'); says.className = 'err'; says.textContent = 'Not valid: ' + e.message + '.'; $('out').hidden = true; return;
+  }
+  el.removeAttribute('aria-invalid'); says.className = ''; says.textContent = Cron.describe(c); $('out').hidden = false;
+  const now = new Date(), runs = Cron.nextN(c, now, 10);
+  $('runs').innerHTML = runs.length ? runs.map((d, i) => `<tr><td>${i + 1}</td><td>${iso(d)}</td><td>${loc(d)}</td><td>${rel(d - now)}</td></tr>`).join('')
+    : '<tr><td colspan="4">Never runs: no real date matches (for example, 30 February).</td></tr>';
+  // Weekly shape: for each (weekday, hour), does any minute fire in any of the next 5 weeks' matching days?
+  const cell = Array.from({ length: 7 }, () => Array(24).fill(false));
+  const base = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  let hits = 0;
+  for (let day = 0; day < 35; day++) for (let h = 0; h < 24; h++) {
+    if (!c.hour.has(h)) continue;
+    const t = new Date(base + day * 86400000 + h * 3600000);
+    if (!c.month.has(t.getUTCMonth() + 1)) continue;
+    for (const m of c.minute) { t.setUTCMinutes(m); if (Cron.matches(c, t)) { cell[t.getUTCDay()][h] = true; hits++; break; } }
+  }
+  const names = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], order = [1,2,3,4,5,6,0];
+  $('grid').innerHTML = order.map((d) => `<span>${names[d]}</span>` + cell[d].map((on, h) => `<i class="${on ? 'on' : ''}" title="${names[d]} ${String(h).padStart(2,'0')}:00 ${on ? 'runs' : 'quiet'}"></i>`).join('')).join('');
+  $('hrs').innerHTML = '<span></span>' + ['00','06','12','18'].map((h) => `<b>${h}:00</b>`).join('');
+  const tot = cell.flat().filter(Boolean).length;
+  $('wk').textContent = tot ? `${tot} of 168 hours in a typical week contain a run (looked at the next 5 weeks; month restrictions can hide days).` : 'No runs in the next 5 weeks.';
+}
+$('expr').addEventListener('input', render); render();
+</script></body></html>

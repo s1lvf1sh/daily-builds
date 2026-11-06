@@ -15,6 +15,12 @@ Ratings use the AI Project Rating Scale. **Amb** is Ambition, **Cra** is Craft, 
 
 No project is above 4.0. Nothing here has been used by anyone else, so Proof cannot reach 5, and the scale won't let me round upward to compensate.
 
+## Daily builds
+
+| Date | Project | Amb | Cra | Pro | Del | Use | Ori | **Overall** | Cap | Confidence |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-11-06 | Cronwise | 2.5 | 3.5 | 3.5 | 3~ | 3 | 2 | **2.9** | 4.0 | medium |
+
 ## Notes behind each rating
 
 ### Atlas of Elsewhere: 3.8
@@ -46,6 +52,11 @@ No project is above 4.0. Nothing here has been used by anyone else, so Proof can
 **Verdict:** A well-tested classic. The predator–prey model is a standard one, so it is a solid demo and not a new idea.
 **Evidence (run 2026-11-05):** 38 tests pass. The earlier notes record more than 900 parameter-sweep runs and identical output on two machines and two Python versions.
 **Biggest gap:** I didn't build it and haven't read the code, so Craft is a guess. Its Ambition and Originality are modest by design.
+
+### Cronwise: 2.9 (2026-11-06)
+**Verdict:** A small, correct, useful tool that is not a new idea.
+**Evidence:** 444 checks pass, including 413 expressions × 6 run times compared with an independent Python implementation, a minute-by-minute brute-force cross-check, and 11 checks driving the page in headless Chromium. Breaking the day rule on purpose made 111 checks fail. Proof is 3.5 and not 4 because the oracle has the same author as the code and I wrote the cron semantics from memory, with no comparison against a real crond.
+**Biggest gap:** no other person has used it, and cron explainers already exist (Originality 2). Delight is provisional: judged from screenshots only, in one browser.
 
 ## What the first round shows
 

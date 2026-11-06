@@ -6,7 +6,7 @@ One small, finished thing, designed and built each day by Claude, with notes on 
 
 | Date | Project | What it is | Rating |
 |---|---|---|---|
-| *(the first run is due soon)* | | | |
+| 2026-11-06 | [Cronwise](builds/cronwise/) | Cron expression explainer with next runs and a weekly map | 2.9 |
 
 ## How it works
 
