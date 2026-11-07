@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tonal Ladder</title>
+<style>
+  :root { color-scheme: light dark; --bg:#f6f4ef; --fg:#26221c; --muted:#6b6459; --card:#fffdf8; --line:#d6cfc0; --accent:#2a5fa8; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#16181d; --fg:#e3e0d8; --muted:#a09b8f; --card:#1d2027; --line:#343843; --accent:#7cb4ff; } }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui,sans-serif; }
+  main { max-width:900px; margin:0 auto; padding:28px 20px 48px; }
+  h1 { margin:0 0 4px; font-size:28px; } .lede { margin:0 0 20px; color:var(--muted); }
+  h2 { font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:26px 0 8px; }
+  .controls { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px 20px; background:var(--card); border:1px solid var(--line); border-radius:8px; padding:14px; }
+  label { display:block; font-size:14px; } label output { float:right; font-variant-numeric:tabular-nums; color:var(--muted); }
+  input[type=range] { width:100%; }
+  .ramp { display:flex; border-radius:8px; overflow:hidden; border:1px solid var(--line); }
+  .sw { flex:1; min-height:110px; display:flex; flex-direction:column; justify-content:flex-end; padding:6px; font-size:12px; font-variant-numeric:tabular-nums; }
+  .sw b { font-size:13px; }
+  table { border-collapse:collapse; width:100%; font-size:12px; font-variant-numeric:tabular-nums; }
+  td, th { border:1px solid var(--line); text-align:center; padding:3px 0; }
+  td.aaa { background:#1f7a3a; color:#fff; } td.aa { background:#5aa468; color:#000; } td.lg { background:#d9c36a; color:#000; } td.no { color:var(--muted); }
+  .legend span { display:inline-block; padding:1px 8px; margin-right:6px; font-size:12px; border-radius:4px; }
+  pre { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px; overflow:auto; font-size:13px; margin:0 0 8px; }
+  button { font:inherit; padding:6px 12px; border-radius:6px; border:1px solid var(--line); background:var(--card); color:var(--fg); cursor:pointer; }
+  .rule { background:var(--card); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:6px; padding:10px 14px; margin:14px 0; }
+  .scroll { overflow-x:auto; }
+  .demo { display:flex; flex-wrap:wrap; gap:10px; }
+  .demo div { padding:10px 14px; border-radius:6px; font-weight:600; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Tonal Ladder</h1>
+  <p class="lede">Make a colour ramp where contrast is predictable. Pick a hue; every step is spaced so that <em>any two steps k apart have the same WCAG contrast</em>, in any hue.</p>
+
+  <div class="controls">
+    <label>Hue <output id="o-hue"></output><input id="hue" type="range" min="0" max="359" value="250"></label>
+    <label>Chroma <output id="o-chroma"></output><input id="chroma" type="range" min="0" max="0.3" step="0.005" value="0.12"></label>
+    <label>Steps <output id="o-steps"></output><input id="steps" type="range" min="4" max="16" value="10"></label>
+    <label>Darkest vs white <output id="o-max"></output><input id="max" type="range" min="8" max="21" step="0.5" value="16"></label>
+  </div>
+
+  <div class="rule" id="rule" aria-live="polite"></div>
+
+  <h2>Ramp</h2>
+  <div class="ramp" id="ramp"></div>
+
+  <h2>Contrast between every pair of steps</h2>
+  <p class="legend"><span style="background:#1f7a3a;color:#fff">≥ 7 AAA</span><span style="background:#5aa468;color:#000">≥ 4.5 AA</span><span style="background:#d9c36a;color:#000">≥ 3 large text / UI</span></p>
+  <div class="scroll"><table id="matrix"></table></div>
+
+  <h2>Try a pair</h2>
+  <div class="demo" id="demo"></div>
+
+  <h2>CSS variables</h2>
+  <pre id="css"></pre>
+  <button id="copy">Copy CSS</button> <span id="copied" role="status"></span>
+</main>
+<script src="src/ladder.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const val = (id) => Number($(id).value);
+  const text = (hex) => (Ladder.contrast(hex, '#ffffff') >= Ladder.contrast(hex, '#000000') ? '#fff' : '#000');
+  function render() {
+    const hue = val('hue'), chroma = val('chroma'), steps = val('steps'), max = val('max');
+    $('o-hue').textContent = hue + '°'; $('o-chroma').textContent = chroma.toFixed(3); $('o-steps').textContent = steps; $('o-max').textContent = max + ':1';
+    const r = Ladder.makeRamp({ hue, chroma, steps, maxContrast: max });
+    const g = (lvl) => Ladder.gapFor(r, lvl);
+    const part = (lvl, name) => g(lvl) ? `<b>${g(lvl)}</b> apart for ${name} (${lvl}:1)` : `no pair reaches ${name} (${lvl}:1)`;
+    $('rule').innerHTML = `Each step is ×${r.ratio.toFixed(3)} more contrast than the last. Steps ${part(3, 'large text')}; ${part(4.5, 'AA text')}; ${part(7, 'AAA text')}.`;
+    $('ramp').innerHTML = r.steps.map((s) => `<div class="sw" style="background:${s.hex};color:${text(s.hex)}"><b>${s.index}</b>${s.hex}<br>${s.vsWhite.toFixed(2)}</div>`).join('');
+    const cls = (c) => (c >= 7 ? 'aaa' : c >= 4.5 ? 'aa' : c >= 3 ? 'lg' : 'no');
+    let h = '<tr><th></th>' + r.steps.map((s) => `<th>${s.index}</th>`).join('') + '</tr>';
+    r.steps.forEach((a) => { h += `<tr><th>${a.index}</th>` + r.steps.map((b) => { const c = Ladder.contrast(a.hex, b.hex); return a.index === b.index ? '<td class="no">·</td>' : `<td class="${cls(c)}" title="step ${a.index} on step ${b.index}: ${c.toFixed(2)}:1">${c.toFixed(1)}</td>`; }).join('') + '</tr>'; });
+    $('matrix').innerHTML = h;
+    const k = g(4.5);
+    $('demo').innerHTML = k ? r.steps.slice(0, r.steps.length - k).filter((_, i) => i % 2 === 0).map((s) => { const t = r.steps[s.index + k]; return `<div style="background:${s.hex};color:${t.hex}">Steps ${s.index} / ${t.index} · ${Ladder.contrast(s.hex, t.hex).toFixed(1)}:1</div>`; }).join('') : '<span>No pair reaches 4.5:1; raise “Darkest vs white” or add steps.</span>';
+    $('css').textContent = Ladder.toCss(r);
+  }
+  document.querySelectorAll('input').forEach((i) => i.addEventListener('input', render));
+  $('copy').addEventListener('click', () => { (navigator.clipboard ? navigator.clipboard.writeText($('css').textContent) : Promise.reject()).then(() => $('copied').textContent = 'Copied', () => $('copied').textContent = 'Select the text above and copy it'); });
+  render();
+</script>
+</body>
+</html>

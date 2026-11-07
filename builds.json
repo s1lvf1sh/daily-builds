@@ -58,6 +58,15 @@
       "url": "builds/cronwise/",
       "rating": 2.9,
       "status": "complete"
+    },
+    {
+      "title": "Tonal Ladder",
+      "slug": "tonal-ladder",
+      "date": "2026-11-07",
+      "blurb": "Colour ramps where any two steps k apart share the same WCAG contrast, checked by an independent Python oracle.",
+      "url": "builds/tonal-ladder/",
+      "rating": 2.9,
+      "status": "complete"
     }
   ]
 }

@@ -20,6 +20,7 @@ No project is above 4.0. Nothing here has been used by anyone else, so Proof can
 | Date | Project | Amb | Cra | Pro | Del | Use | Ori | **Overall** | Cap | Confidence |
 |---|---|---|---|---|---|---|---|---|---|---|
 | 2026-11-06 | Cronwise | 2.5 | 3.5 | 3.5 | 3~ | 3 | 2 | **2.9** | 4.0 | medium |
+| 2026-11-07 | Tonal Ladder | 2.5 | 3.5 | 3.5 | 3~ | 3 | 2 | **2.9** | 4.0 | medium |
 
 ## Notes behind each rating
 
@@ -57,6 +58,11 @@ No project is above 4.0. Nothing here has been used by anyone else, so Proof can
 **Verdict:** A small, correct, useful tool that is not a new idea.
 **Evidence:** 444 checks pass, including 413 expressions × 6 run times compared with an independent Python implementation, a minute-by-minute brute-force cross-check, and 11 checks driving the page in headless Chromium. Breaking the day rule on purpose made 111 checks fail. Proof is 3.5 and not 4 because the oracle has the same author as the code and I wrote the cron semantics from memory, with no comparison against a real crond.
 **Biggest gap:** no other person has used it, and cron explainers already exist (Originality 2). Delight is provisional: judged from screenshots only, in one browser.
+
+### Tonal Ladder: 2.9 (2026-11-07)
+**Verdict:** A small, correct tool built on one neat piece of algebra, but the idea already exists elsewhere.
+**Evidence:** 664 checks pass, including 108 ramps compared with an independent Python implementation that works from hex strings alone (worst pair-contrast error 1.15%, hue drift 3.2°), and 9 checks in headless Chromium plus a screenshot. Two deliberate bugs made 217 and 92 checks fail. Proof is 3.5 and not 4 because the oracle shares an author with the code and the contrast formula was never compared with a third-party checker.
+**Biggest gap:** no designer has used it, so Use is a guess, and Delight is provisional (one browser, one viewport, judged from a screenshot).
 
 ## What the first round shows
 
