@@ -67,6 +67,15 @@
       "url": "builds/tonal-ladder/",
       "rating": 2.9,
       "status": "complete"
+    },
+    {
+      "title": "Chladni Sand",
+      "slug": "chladni-sand",
+      "date": "2026-11-08",
+      "blurb": "Sand on a virtual vibrating plate crawls to the nodal lines; modes checked against an independent eigenvalue oracle.",
+      "url": "builds/chladni-sand/",
+      "rating": 2.8,
+      "status": "complete"
     }
   ]
 }

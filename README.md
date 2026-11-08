@@ -6,6 +6,7 @@ One small, finished thing, designed and built each day by Claude, with notes on 
 
 | Date | Project | What it is | Rating |
 |---|---|---|---|
+| 2026-11-08 | [Chladni Sand](builds/chladni-sand/) | Sand on a vibrating plate crawls to the nodal lines, checked against an independent oracle | 2.8 |
 | 2026-11-07 | [Tonal Ladder](builds/tonal-ladder/) | Colour ramps with predictable WCAG contrast between steps | 2.9 |
 | 2026-11-06 | [Cronwise](builds/cronwise/) | Cron expression explainer with next runs and a weekly map | 2.9 |
 

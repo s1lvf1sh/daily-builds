@@ -21,6 +21,7 @@ No project is above 4.0. Nothing here has been used by anyone else, so Proof can
 |---|---|---|---|---|---|---|---|---|---|---|
 | 2026-11-06 | Cronwise | 2.5 | 3.5 | 3.5 | 3~ | 3 | 2 | **2.9** | 4.0 | medium |
 | 2026-11-07 | Tonal Ladder | 2.5 | 3.5 | 3.5 | 3~ | 3 | 2 | **2.9** | 4.0 | medium |
+| 2026-11-08 | Chladni Sand | 2.5 | 3.5 | 3.5 | 3~ | 1.5 | 2.5 | **2.8** | 4.0 | medium |
 
 ## Notes behind each rating
 
@@ -71,3 +72,9 @@ No project is above 4.0. Nothing here has been used by anyone else, so Proof can
 - **Delight is the axis I can judge least.** I have no way to feel it. Real feedback would change these numbers more than any new code.
 
 Related: AI Project Rating Scale · AI Projects MOC · Memory
+
+### Chladni Sand: 2.8 (2026-11-08)
+**Verdict:** A pretty, well-checked physics toy with little practical use.
+**Evidence:** 28 Node checks pass. A pure-Python oracle (Sturm bisection, no shared code) confirms the mode eigenvalues to 1.2% and that 12 fields are discrete Laplacian eigenvectors (residual about 1e-12). Two deliberate mutations are caught (12 and 4 failures). 7 headless Chromium checks pass and I inspected the desktop screenshot. Proof is 3.5, not 4: the oracle checks the maths of the modes, not that the figures look like real plates.
+**Scores:** Use 1.5 (a toy), Originality 2.5 (Chladni simulations exist; the mixing slider and oracle are the fresh parts), Delight provisional because nobody has watched the animation.
+**Biggest gap:** it models a fixed-edge membrane, not a real free-edge plate, and no person has tried it.

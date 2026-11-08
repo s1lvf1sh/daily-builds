@@ -13,3 +13,10 @@
 - The sweep never failed on real code, so prove test power with deliberate mutations; write browser test expectations from the page's actual rules, not from guesses.
 - Domains done so far: evolution, maps, ecology, music, god game, language debugger, cron, colour/accessibility. Try text, data, physics, or a small game next.
 - Keep scores honest: two days at 2.9 with Originality 2 suggests the next build should favour a more original idea over another utility.
+
+## 2026-11-08 (Chladni Sand)
+- Same toolchain, but **numpy is not installed**. A pure-Python oracle still works: Sturm bisection for tridiagonal eigenvalues, residual checks with a stencil.
+- When an oracle is a discretisation, compare to its exact discrete value for the same index, not the continuum value; coarse grids misled me at high modes.
+- Read the screenshot before settling defaults: the first default (a pure product mode) was a dull grid.
+- Browser checks that begin after the sim converged prove little; sample before the first frame.
+- Domains done: evolution, maps, ecology, music, god game, language debugger, cron, colour, wave physics. Try text/data, a real small game, or something with a genuine daily use. Scores are stuck at 2.8-2.9 mainly because of Use and Originality.

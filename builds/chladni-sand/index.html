@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Chladni Sand</title>
+<style>
+  :root { color-scheme: light dark; --bg:#f4f1ea; --fg:#26221c; --muted:#7a7266; --card:#fffdf8; --line:#ddd6c8; --accent:#2a5fa8; --plate:#2b2f38; --sand:#f0d9a0; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#14161b; --fg:#e3e0d8; --muted:#8d887c; --card:#1c1f26; --line:#2f333c; --accent:#7cb4ff; --plate:#0d0f13; --sand:#f0d9a0; } }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui,sans-serif; }
+  main { max-width:900px; margin:0 auto; padding:24px 16px 40px; }
+  h1 { margin:0; font-size:28px; } p.lede { margin:2px 0 18px; color:var(--muted); }
+  .wrap { display:grid; grid-template-columns:minmax(0,480px) 1fr; gap:20px; align-items:start; }
+  @media (max-width:760px) { .wrap { grid-template-columns:1fr; } }
+  canvas { width:100%; aspect-ratio:1; background:var(--plate); border-radius:8px; border:1px solid var(--line); display:block; }
+  .panel { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:14px; }
+  label { display:block; font-size:13px; color:var(--muted); margin:12px 0 4px; } label:first-child { margin-top:0; }
+  select, input[type=range], button { width:100%; box-sizing:border-box; font:inherit; }
+  select, button { padding:6px 8px; background:var(--bg); color:var(--fg); border:1px solid var(--line); border-radius:6px; }
+  button { cursor:pointer; margin-top:12px; } button:hover { border-color:var(--accent); }
+  .row { display:flex; gap:8px; } .row button { margin-top:12px; }
+  .stat { margin-top:12px; font-size:13px; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .stat b { color:var(--fg); }
+  .check { display:flex; gap:8px; align-items:center; margin-top:12px; font-size:14px; }
+  footer { margin-top:18px; color:var(--muted); font-size:13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Chladni Sand</h1>
+  <p class="lede">Sprinkle sand on a vibrating plate and it crawls to the places that do not move. Pick a vibration mode and watch the figure form.</p>
+  <div class="wrap">
+    <canvas id="cv" width="480" height="480" role="img" aria-label="Sand grains forming a Chladni figure"></canvas>
+    <div class="panel">
+      <label for="mode">Mode (m, n), relative frequency</label>
+      <select id="mode"></select>
+      <label for="mix">Mix of the two partner modes: <span id="mixv">0.80</span></label>
+      <input id="mix" type="range" min="-1" max="1" step="0.05" value="0.8" />
+      <label for="amp">Shake strength: <span id="ampv">0.06</span></label>
+      <input id="amp" type="range" min="0.01" max="0.15" step="0.01" value="0.06" />
+      <label for="count">Grains: <span id="countv">20000</span></label>
+      <input id="count" type="range" min="2000" max="60000" step="2000" value="20000" />
+      <div class="check"><input id="run" type="checkbox" checked /><label for="run" style="margin:0;color:inherit">Shaking</label></div>
+      <div class="check"><input id="signs" type="checkbox" /><label for="signs" style="margin:0;color:inherit">Show plate phase (two colours)</label></div>
+      <div class="row"><button id="reset">Re-sprinkle</button></div>
+      <div class="stat">Steps: <b id="steps">0</b><br>Mean |displacement| under grains: <b id="mean">–</b> (random sprinkle ≈ <b id="base">–</b>)</div>
+    </div>
+  </div>
+  <footer>An idealised plate: a square membrane with fixed edges, whose modes are products of sines. Real metal plates with free edges give different figures. Frequencies are relative (√(m²+n²)), not Hz.</footer>
+</main>
+<script src="src/plate.js"></script>
+<script>
+(() => {
+  const P = Plate, cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+  const modes = P.modeList(8), $ = (id) => document.getElementById(id);
+  const sel = $('mode');
+  modes.forEach((q, i) => { const o = document.createElement('option'); o.value = i; o.textContent = `(${q.m}, ${q.n})  f ${Math.sqrt(q.k2).toFixed(2)}`; sel.appendChild(o); });
+  sel.value = modes.findIndex((q) => q.m === 2 && q.n === 5);
+  let rng = P.mulberry32(7), g, steps = 0, baseline = 0, phaseImg = null;
+  const cur = () => modes[+sel.value], mix = () => +$('mix').value;
+
+  function computeBase() {
+    const q = cur(), s = mix(); let t = 0, n = 0; const N = 80;
+    for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) { t += Math.abs(P.field(q.m, q.n, s, (i + .5) / N, (j + .5) / N)); n++; }
+    baseline = t / n; $('base').textContent = baseline.toFixed(3);
+  }
+  function buildPhase() {
+    const q = cur(), s = mix(), W = cv.width, im = ctx.createImageData(W, W), dark = matchMedia('(prefers-color-scheme: dark)').matches;
+    for (let j = 0; j < W; j++) for (let i = 0; i < W; i++) {
+      const u = P.field(q.m, q.n, s, (i + .5) / W, (j + .5) / W), k = (j * W + i) * 4;
+      const a = Math.min(1, Math.abs(u)) * 0.5;
+      const c = u >= 0 ? [60, 110, 190] : [190, 90, 70];
+      im.data[k] = dark ? c[0] * a : 40 + (c[0] - 40) * a; im.data[k+1] = dark ? c[1] * a : 44 + (c[1] - 44) * a; im.data[k+2] = dark ? c[2] * a : 56 + (c[2] - 56) * a; im.data[k+3] = 255;
+    }
+    phaseImg = im;
+  }
+  function sprinkle() { g = P.scatter(+$('count').value, rng); steps = 0; computeBase(); buildPhase(); }
+  function draw() {
+    const W = cv.width;
+    if ($('signs').checked) ctx.putImageData(phaseImg, 0, 0); else { ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--plate') || '#222'; ctx.fillRect(0, 0, W, W); }
+    ctx.fillStyle = '#f0d9a0'; ctx.globalAlpha = 0.85;
+    for (let i = 0; i < g.xs.length; i++) ctx.fillRect(g.xs[i] * (W - 1), g.ys[i] * (W - 1), 1.3, 1.3);
+    ctx.globalAlpha = 1;
+    $('steps').textContent = steps; $('mean').textContent = P.meanAbs(g, cur(), mix()).toFixed(3);
+  }
+  function tick() {
+    if ($('run').checked) { for (let k = 0; k < 2; k++) { P.step(g, cur(), mix(), rng, +$('amp').value); steps++; } }
+    draw(); requestAnimationFrame(tick);
+  }
+  const bind = (id, out) => $(id).addEventListener('input', () => { if (out) $(out).textContent = (+$(id).value).toFixed(id === 'mix' ? 2 : id === 'amp' ? 2 : 0); });
+  bind('mix', 'mixv'); bind('amp', 'ampv'); bind('count', 'countv');
+  $('mix').addEventListener('input', () => { computeBase(); buildPhase(); });
+  sel.addEventListener('change', () => { computeBase(); buildPhase(); });
+  $('count').addEventListener('change', sprinkle);
+  $('reset').addEventListener('click', sprinkle);
+  window.__chladni = { get steps() { return steps; }, get mean() { return P.meanAbs(g, cur(), mix()); }, get base() { return baseline; }, setMode(m, n) { sel.value = modes.findIndex((q) => q.m === m && q.n === n); sel.dispatchEvent(new Event('change')); sprinkle(); } };
+  sprinkle(); tick();
+})();
+</script>
+</body>
+</html>
