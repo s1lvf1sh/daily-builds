@@ -1,0 +1,31 @@
+// Drives the real page in headless Chromium. Run: NODE_PATH=$(npm root -g) node test/browser.js
+const { chromium } = require('playwright');
+const path = require('path');
+(async () => {
+  const b = await chromium.launch(); const pg = await b.newPage({ viewport: { width: 1000, height: 800 }, deviceScaleFactor: 1 });
+  const errs = []; pg.on('pageerror', (e) => errs.push(String(e))); pg.on('console', (m) => m.type() === 'error' && errs.push(m.text()));
+  await pg.goto('file://' + path.resolve(__dirname, '../index.html'));
+  let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : (fail++, console.log('FAIL', m)); };
+  const txt = (s) => pg.locator(s).innerText();
+  ok((await txt('#pay')).toLowerCase().includes('settle up'), 'example renders settle section');
+  await pg.screenshot({ path: process.argv[2] || '/tmp/even-split.png' });
+  await pg.fill('#in', 'a paid 10 x for b\nc paid 20 y for d');
+  ok((await txt('#pay')).includes('2 independent groups'), 'two groups explained');
+  ok((await pg.locator('.tr').count()) === 2, 'two transfers listed');
+  await pg.fill('#in', 'a paid 10 x for b\nb paid 10 y for a');
+  ok((await txt('#pay')).includes('Everyone is square'), 'square');
+  await pg.fill('#in', 'a paid 10.01 x for a, b, c\nnonsense');
+  ok((await txt('#errs')).includes('Line 2'), 'error shown with line number');
+  ok((await txt('#bal')).includes('10.01'), 'balances still computed beside an error');
+  await pg.fill('#in', 'a paid 10 x for b');
+  const url = pg.url(); ok(url.includes('#'), 'state in hash');
+  await pg.reload();
+  ok((await pg.inputValue('#in')) === 'a paid 10 x for b', 'state restored from link');
+  await pg.fill('#in', ''); ok((await txt('#bal')).includes('Add an expense'), 'empty state');
+  await pg.fill('#in', '<img src=x onerror=alert(1)> paid 5'); ok((await pg.locator('#bal img').count()) === 0, 'no HTML injection from names');
+  ok(errs.length === 0, 'no console errors ' + errs.join('|'));
+  await pg.setViewportSize({ width: 390, height: 800 }); await pg.click('#ex');
+  ok(await pg.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'no horizontal scroll at 390px');
+  await pg.screenshot({ path: (process.argv[2] || '/tmp/even-split.png').replace('.png', '-mobile.png'), fullPage: true });
+  console.log(pass + ' passed, ' + fail + ' failed'); await b.close(); process.exit(fail ? 1 : 0);
+})();

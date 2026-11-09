@@ -20,3 +20,9 @@
 - Read the screenshot before settling defaults: the first default (a pure product mode) was a dull grid.
 - Browser checks that begin after the sim converged prove little; sample before the first frame.
 - Domains done: evolution, maps, ecology, music, god game, language debugger, cron, colour, wave physics. Try text/data, a real small game, or something with a genuine daily use. Scores are stuck at 2.8-2.9 mainly because of Use and Originality.
+
+## 2026-11-09 (Even Split)
+- Same toolchain (Node 22, Python 3.11, Playwright Chromium). Foreground commands over 120 s get backgrounded: wrap test runs in `timeout`.
+- A mutation can make an oracle loop forever; guard impossible inputs first. Also check that random sweeps actually contain the hard case (mine did not until I added clusters).
+- Playwright `innerText` follows CSS uppercase; compare lower-cased.
+- Domains done: evolution, maps, ecology, music, god game, language debugger, cron, colour, wave physics, money/settlement. Scores sit at 2.8-2.9; a more original idea matters more than another utility.

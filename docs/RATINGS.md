@@ -22,6 +22,7 @@ No project is above 4.0. Nothing here has been used by anyone else, so Proof can
 | 2026-11-06 | Cronwise | 2.5 | 3.5 | 3.5 | 3~ | 3 | 2 | **2.9** | 4.0 | medium |
 | 2026-11-07 | Tonal Ladder | 2.5 | 3.5 | 3.5 | 3~ | 3 | 2 | **2.9** | 4.0 | medium |
 | 2026-11-08 | Chladni Sand | 2.5 | 3.5 | 3.5 | 3~ | 1.5 | 2.5 | **2.8** | 4.0 | medium |
+| 2026-11-09 | Even Split | 2 | 3.5 | 3.5 | 3~ | 3 | 1.5 | **2.8** | 4.0 | medium |
 
 ## Notes behind each rating
 
@@ -78,3 +79,9 @@ Related: AI Project Rating Scale · AI Projects MOC · Memory
 **Evidence:** 28 Node checks pass. A pure-Python oracle (Sturm bisection, no shared code) confirms the mode eigenvalues to 1.2% and that 12 fields are discrete Laplacian eigenvectors (residual about 1e-12). Two deliberate mutations are caught (12 and 4 failures). 7 headless Chromium checks pass and I inspected the desktop screenshot. Proof is 3.5, not 4: the oracle checks the maths of the modes, not that the figures look like real plates.
 **Scores:** Use 1.5 (a toy), Originality 2.5 (Chladni simulations exist; the mixing slider and oracle are the fresh parts), Delight provisional because nobody has watched the animation.
 **Biggest gap:** it models a fixed-edge membrane, not a real free-edge plate, and no person has tried it.
+
+### Even Split: 2.8 (2026-11-09)
+**Verdict:** A small, exact, useful tool in a very familiar category.
+**Evidence:** 2734 Node checks pass, including 400 seeded scenarios compared with an independent Python oracle (exact-fraction balances; a different search for the minimum payment count). Two deliberate mutations were caught (636 failures; oracle count mismatches). 12 checks in headless Chromium plus desktop and mobile screenshots. Proof is 3.5, not 4: the oracle shares one lemma with the code and covers only simple weights, and the real-environment check was one browser.
+**Scores:** Ambition 2 (a known problem), Use 3 (a defined audience, but unused), Originality 1.5 (settle-up apps are standard), Delight provisional (one browser, screenshots only).
+**Biggest gap:** nobody has tried the line syntax, and the idea is not new.

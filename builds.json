@@ -76,6 +76,15 @@
       "url": "builds/chladni-sand/",
       "rating": 2.8,
       "status": "complete"
+    },
+    {
+      "title": "Even Split",
+      "slug": "even-split",
+      "date": "2026-11-09",
+      "blurb": "Type who paid what and get the fewest payments that settle a group in exact cents, checked by an independent Python oracle.",
+      "url": "builds/even-split/",
+      "rating": 2.8,
+      "status": "complete"
     }
   ]
 }

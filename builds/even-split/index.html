@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Even Split</title>
+<style>
+:root{--bg:#fbf8f3;--fg:#24211c;--mut:#7a7165;--card:#fff;--line:#e6dfd3;--acc:#1f6f5c;--neg:#b4452f;--pos:#1f6f5c}
+@media (prefers-color-scheme:dark){:root{--bg:#1a1815;--fg:#ece6da;--mut:#9b9284;--card:#232019;--line:#363126;--acc:#58c2a6;--neg:#e58a72;--pos:#58c2a6}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,sans-serif}
+main{max-width:980px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.6rem;margin:0}
+.sub{color:var(--mut);margin:.2rem 0 1.2rem}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+h2{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin:0 0 8px}
+textarea{width:100%;height:300px;font:14px/1.5 ui-monospace,Menlo,monospace;background:transparent;color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:10px;resize:vertical}
+.hint{font-size:.85rem;color:var(--mut);margin:8px 0 0}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.85em}
+.err{color:var(--neg);font-size:.88rem;margin:4px 0}
+table{width:100%;border-collapse:collapse}
+td,th{padding:4px 6px;text-align:left;border-bottom:1px solid var(--line)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.pos{color:var(--pos)}.neg{color:var(--neg)}
+.tr{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.tr b{font-variant-numeric:tabular-nums;margin-left:auto}
+.badge{font-size:.78rem;color:var(--mut)}
+button{font:inherit;background:var(--acc);color:#fff;border:0;border-radius:6px;padding:6px 12px;cursor:pointer}
+button.sec{background:transparent;color:var(--acc);border:1px solid var(--acc)}
+.row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.ok{color:var(--pos);font-weight:600}
+</style>
+</head>
+<body>
+<main>
+<h1>Even Split</h1>
+<p class="sub">Type who paid what. Get the fewest payments that settle everyone, in exact cents.</p>
+<div class="grid">
+<section class="card">
+<h2>Expenses</h2>
+<textarea id="in" spellcheck="false" aria-label="Expenses, one per line"></textarea>
+<p class="hint"><code>ana paid 42.50 dinner</code> splits among everyone.<br>
+<code>bo paid 30 taxi for ana, bo</code> splits among those named.<br>
+<code>cy paid 61 hotel for ana:2, bo, cy</code> ana owes two shares.<br>
+<code>dee paid 10 snacks for all except cy</code><br>
+<code>bo sent ana 5</code> records a payment already made.<br>
+Anything after <code>#</code> is ignored.</p>
+<div id="errs"></div>
+<div class="row"><button id="share" class="sec">Copy link</button><button id="ex" class="sec">Example</button><span id="msg" class="badge"></span></div>
+</section>
+<section>
+<div class="card" id="bal"></div>
+<div class="card" id="pay" style="margin-top:18px"></div>
+</section>
+</div>
+</main>
+<script src="src/split.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+const EXAMPLE = `# weekend away
+ana paid 142.80 cabin for all
+bo paid 63.45 groceries for all
+cy paid 38 fuel for ana, bo, cy
+dee paid 24.90 pizza for all except cy
+cy paid 61 boat hire for ana:2, bo, cy
+bo sent ana 20`;
+const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+const money = (c) => EvenSplit.fmt(c);
+function render() {
+  const text = $('in').value;
+  const r = EvenSplit.run(text);
+  $('errs').innerHTML = r.errors.map((e) => `<div class="err">Line ${e.line}: ${esc(e.message)} (<code>${esc(e.text)}</code>)</div>`).join('');
+  if (!r.people.length) {
+    $('bal').innerHTML = '<h2>Balances</h2><p class="badge">Add an expense to begin.</p>'; $('pay').innerHTML = ''; return;
+  }
+  $('bal').innerHTML = '<h2>Balances</h2><table><tr><th>Person</th><th class="n">Paid</th><th class="n">Share</th><th class="n">Net</th></tr>' +
+    r.people.map((p) => `<tr><td>${esc(cap(p))}</td><td class="n">${money(r.paid[p])}</td><td class="n">${money(r.owed[p])}</td><td class="n ${r.bal[p] > 0 ? 'pos' : r.bal[p] < 0 ? 'neg' : ''}">${r.bal[p] > 0 ? '+' : ''}${money(r.bal[p])}</td></tr>`).join('') +
+    '</table><p class="hint">Net is positive when the group owes that person.</p>';
+  const nz = r.people.filter((p) => r.bal[p] !== 0).length;
+  let h = '<h2>Settle up</h2>';
+  if (!r.transfers.length) h += '<p class="ok">Everyone is square.</p>';
+  else {
+    h += r.transfers.map((t) => `<div class="tr"><span>${esc(cap(t.from))} pays ${esc(cap(t.to))}</span><b>${money(t.cents)}</b></div>`).join('');
+    const why = r.exact ? (r.groups.length > 1 ? `${nz} people with a balance split into ${r.groups.length} independent groups that each cancel out, so ${r.transfers.length} payments is the minimum.` : `${r.transfers.length} payments is the minimum for ${nz} people.`)
+      : `${nz} people is too many for the exact search, so this is a good answer (at most ${nz - 1} payments) and not a proven minimum.`;
+    h += `<p class="hint">${why}</p>`;
+  }
+  $('pay').innerHTML = h;
+  try { history.replaceState(null, '', '#' + encodeURIComponent(text)); } catch (e) {}
+}
+$('in').addEventListener('input', render);
+$('ex').onclick = () => { $('in').value = EXAMPLE; render(); };
+$('share').onclick = async () => {
+  try { await navigator.clipboard.writeText(location.href); $('msg').textContent = 'Link copied'; } catch (e) { $('msg').textContent = 'Copy the address bar instead'; }
+  setTimeout(() => ($('msg').textContent = ''), 2000);
+};
+let init = EXAMPLE;
+try { if (location.hash.length > 1) init = decodeURIComponent(location.hash.slice(1)); } catch (e) {}
+$('in').value = init; render();
+</script>
+</body>
+</html>
