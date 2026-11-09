@@ -12,4 +12,4 @@ for dir in "$here"/journal/*/; do
   [ -n "$hub" ] || hub="$(basename "$dir")"
   if [ -e "$dest/$hub" ]; then echo "skip   $hub (already in vault)"; else cp -r "$dir" "$dest/$hub"; echo "copied $hub"; fi
 done
-echo "Ratings are in docs/RATINGS.md; merge any new rows into 'AI Project Ratings' by hand."
+echo "(ratings: see tools/merge-ratings.py, or run tools/sync-all.sh)"
