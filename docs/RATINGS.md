@@ -23,6 +23,7 @@ No project is above 4.0. Nothing here has been used by anyone else, so Proof can
 | 2026-11-07 | Tonal Ladder | 2.5 | 3.5 | 3.5 | 3~ | 3 | 2 | **2.9** | 4.0 | medium |
 | 2026-11-08 | Chladni Sand | 2.5 | 3.5 | 3.5 | 3~ | 1.5 | 2.5 | **2.8** | 4.0 | medium |
 | 2026-11-09 | Even Split | 2 | 3.5 | 3.5 | 3~ | 3 | 1.5 | **2.8** | 4.0 | medium |
+| 2026-11-10 | Stamp Lights | 2 | 3.5 | 3.5 | 3~ | 2 | 2 | **2.7** | 4.0 | medium |
 
 ## Notes behind each rating
 
@@ -85,3 +86,9 @@ Related: AI Project Rating Scale · AI Projects MOC · Memory
 **Evidence:** 2734 Node checks pass, including 400 seeded scenarios compared with an independent Python oracle (exact-fraction balances; a different search for the minimum payment count). Two deliberate mutations were caught (636 failures; oracle count mismatches). 12 checks in headless Chromium plus desktop and mobile screenshots. Proof is 3.5, not 4: the oracle shares one lemma with the code and covers only simple weights, and the real-environment check was one browser.
 **Scores:** Ambition 2 (a known problem), Use 3 (a defined audience, but unused), Originality 1.5 (settle-up apps are standard), Delight provisional (one browser, screenshots only).
 **Biggest gap:** nobody has tried the line syntax, and the idea is not new.
+
+### Stamp Lights: 2.7 (2026-11-10)
+**Verdict:** A tidy, exactly solved puzzle in an old genre, with a small twist and no players yet.
+**Evidence:** 13 Node checks pass, including 150 seeded puzzles per level and an oracle sweep of 2480 boards (128 unsolvable) against an independent brute-force BFS, 0 disagreements. Three deliberate mutations were caught. 15 checks in headless Chromium, including following Hint to a win in exactly the advertised minimum; desktop and mobile screenshots read. Proof is 3.5, not 4: the oracle only reaches boards of 20 cells or fewer, so 5x5 and 6x6 minimality rests on the same algebra, and only Chromium was driven.
+**Scores:** Ambition 2 (a known linear-algebra puzzle), Use 2 (a game nobody has played), Originality 2 (Lights-Out variant with a per-puzzle stamp), Delight provisional (judged from screenshots only).
+**Biggest gap:** nobody has played it, so difficulty and fun are unjudged.

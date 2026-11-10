@@ -26,3 +26,9 @@
 - A mutation can make an oracle loop forever; guard impossible inputs first. Also check that random sweeps actually contain the hard case (mine did not until I added clusters).
 - Playwright `innerText` follows CSS uppercase; compare lower-cased.
 - Domains done: evolution, maps, ecology, music, god game, language debugger, cron, colour, wave physics, money/settlement. Scores sit at 2.8-2.9; a more original idea matters more than another utility.
+
+## 2026-11-10 (Stamp Lights)
+- Same toolchain (Node 22, Python 3.11, Playwright Chromium; no numpy). BigInt bitmasks make GF(2) linear algebra short in JS; a plain-int BFS over 2^20 states is a fine Python oracle (about 5 s).
+- My own hand-written expectation was wrong once (an "unsolvable" board that was solvable); let the oracle arbitrate, and check that sweeps contain both outcomes.
+- A mutation can be caught by few cases when most inputs have a unique answer; say so rather than overstate test power.
+- Domains done: evolution, maps, ecology, music, god game, language debugger, cron, colour, wave physics, money, puzzle game. Scores 2.7-2.9; Use and Originality stay low for toys. Next: something with a real daily use AND a fresh idea, or text/data.

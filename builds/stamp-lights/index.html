@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Stamp Lights</title>
+<style>
+  :root { color-scheme: light dark; --bg:#f4f1ea; --fg:#26221c; --muted:#766f63; --card:#fffdf8; --line:#d9d2c3; --off:#e6e0d2; --on:#f2a900; --glow:#ffd45e; --pv:#2a5fa8; --accent:#2a5fa8; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#14161b; --fg:#e6e2d9; --muted:#8e897d; --card:#1c1f26; --line:#30343e; --off:#262a33; --on:#f2b01e; --glow:#ffdf7a; --pv:#7cb4ff; --accent:#7cb4ff; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui,sans-serif; }
+  main { max-width:620px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { margin:0; font-size:28px; } .lede { margin:2px 0 16px; color:var(--muted); }
+  .bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:14px; }
+  button, select { font:inherit; color:var(--fg); background:var(--card); border:1px solid var(--line); border-radius:8px; padding:6px 12px; cursor:pointer; }
+  button:hover:not(:disabled) { border-color:var(--accent); } button:disabled { opacity:.45; cursor:default; }
+  button:focus-visible, select:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .stats { display:flex; gap:20px; align-items:flex-end; margin:6px 0 12px; }
+  .stats div { color:var(--muted); font-size:13px; text-transform:uppercase; letter-spacing:.08em; } .stats b { display:block; font-size:26px; color:var(--fg); letter-spacing:0; }
+  .stampbox { margin-left:auto; text-align:right; }
+  .mini { display:inline-grid; gap:2px; vertical-align:middle; } .mini i { width:12px; height:12px; border-radius:3px; background:transparent; } .mini i.s { background:var(--pv); } .mini i.c { background:var(--pv); outline:2px solid var(--fg); outline-offset:1px; }
+  #board { display:grid; gap:8px; padding:12px; background:var(--card); border:1px solid var(--line); border-radius:14px; touch-action:manipulation; }
+  .cell { aspect-ratio:1; width:100%; padding:0; border-radius:12px; border:2px solid transparent; background:var(--off); transition:background .12s, box-shadow .12s; }
+  .cell.on { background:var(--on); box-shadow:0 0 18px 2px var(--glow); }
+  .cell.pv { border-color:var(--pv); }
+  .cell.hint { outline:3px dashed var(--accent); outline-offset:2px; }
+  #msg { min-height:28px; margin:12px 0 0; font-weight:600; } #msg.win { color:#2f8a4a; }
+  details { margin-top:22px; color:var(--muted); font-size:14px; } details p { margin:6px 0; }
+  .sr { position:absolute; left:-9999px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Stamp Lights</h1>
+  <p class="lede">Lights-out with a twist: every puzzle has its own stamp. Press a cell and the stamp toggles that cell and its neighbours. Turn every light off.</p>
+  <div class="bar">
+    <select id="level" aria-label="Level"><option value="easy">Easy 4×4</option><option value="medium">Medium 5×5</option><option value="hard">Hard 6×6</option></select>
+    <button id="daily">Today's puzzle</button>
+    <button id="rand">New random</button>
+    <button id="undo" disabled>Undo</button>
+    <button id="reset" disabled>Reset</button>
+    <button id="hint">Hint</button>
+  </div>
+  <div class="stats">
+    <div>Presses<b id="moves">0</b></div>
+    <div>Fewest possible<b id="par">–</b></div>
+    <div class="stampbox">Stamp<br><span id="stamp" class="mini" aria-label="Stamp shape"></span></div>
+  </div>
+  <div id="board" role="group" aria-label="Board"></div>
+  <p id="msg" role="status" aria-live="polite"></p>
+  <div class="sr" id="sr" aria-live="polite"></div>
+  <details><summary>How it works</summary>
+    <p>The outlined square in the stamp picture is the cell you press. Hover or focus a cell to preview what it will toggle (parts off the board are ignored).</p>
+    <p>Presses commute and cancel in pairs, so the order never matters and no cell needs pressing twice. The "fewest possible" number is computed exactly by Gaussian elimination over GF(2), then a search over the free choices. Hint recomputes that from the current board, so it stays correct after your own mistakes.</p>
+    <p>Puzzles are made by scrambling a solved board with random presses, so every one is solvable. The link in the address bar (<code>#level/seed</code>) reproduces a puzzle.</p>
+  </details>
+</main>
+<script src="src/lamp.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const boardEl = $('board'), msg = $('msg');
+  let P, board, history, cells = [], hintCell = -1;
+
+  function dailySeed() { const d = new Date(); return d.getUTCFullYear() * 10000 + (d.getUTCMonth() + 1) * 100 + d.getUTCDate(); }
+
+  function load(level, seed) {
+    P = Lamp.makePuzzle(seed, level); board = P.board; history = []; hintCell = -1;
+    $('level').value = level;
+    history_url(level, seed);
+    // build the board
+    boardEl.style.gridTemplateColumns = `repeat(${P.w}, 1fr)`;
+    boardEl.style.maxWidth = (P.w * 84 + 24) + 'px'; boardEl.style.margin = '0';
+    boardEl.innerHTML = ''; cells = [];
+    for (let i = 0; i < P.w * P.h; i++) {
+      const b = document.createElement('button'); b.className = 'cell'; b.type = 'button';
+      b.dataset.i = i;
+      b.addEventListener('click', () => press(i));
+      for (const ev of ['mouseenter', 'focus']) b.addEventListener(ev, () => preview(i, true));
+      for (const ev of ['mouseleave', 'blur']) b.addEventListener(ev, () => preview(i, false));
+      boardEl.appendChild(b); cells.push(b);
+    }
+    drawStamp(); $('par').textContent = P.par; msg.textContent = ''; msg.className = ''; render();
+  }
+
+  function history_url(level, seed) { try { history_replace('#' + level + '/' + seed); } catch (e) {} }
+  function history_replace(h) { window.history.replaceState(null, '', h); }
+
+  function drawStamp() {
+    const xs = P.stamp.map((s) => s[0]), ys = P.stamp.map((s) => s[1]);
+    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    const el = $('stamp'); el.style.gridTemplateColumns = `repeat(${x1 - x0 + 1}, 12px)`; el.innerHTML = '';
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+      const i = document.createElement('i');
+      if (P.stamp.some((s) => s[0] === x && s[1] === y)) i.className = (x === 0 && y === 0) ? 'c' : 's';
+      el.appendChild(i);
+    }
+  }
+
+  function preview(i, on) {
+    const m = Lamp.pressMask(P.w, P.h, P.stamp, i % P.w, Math.floor(i / P.w));
+    cells.forEach((c, j) => c.classList.toggle('pv', on && ((m >> BigInt(j)) & 1n) === 1n));
+  }
+
+  function lit(j) { return ((board >> BigInt(j)) & 1n) === 1n; }
+  function won() { return board === 0n; }
+
+  function render() {
+    cells.forEach((c, j) => { const on = lit(j); c.classList.toggle('on', on); c.classList.remove('hint');
+      c.setAttribute('aria-label', `Row ${Math.floor(j / P.w) + 1}, column ${j % P.w + 1}, ${on ? 'lit' : 'off'}`); c.setAttribute('aria-pressed', on); });
+    $('moves').textContent = history.length;
+    $('undo').disabled = !history.length; $('reset').disabled = !history.length;
+    $('hint').disabled = won();
+    if (won()) {
+      const d = history.length - P.par;
+      msg.className = 'win';
+      msg.textContent = d <= 0 ? `Cleared in ${history.length}: the fewest possible.` : `Cleared in ${history.length}. The fewest possible was ${P.par}.`;
+    } else if (msg.className === 'win') { msg.className = ''; msg.textContent = ''; }
+  }
+
+  function press(i) {
+    if (won()) return;
+    board ^= Lamp.pressMask(P.w, P.h, P.stamp, i % P.w, Math.floor(i / P.w));
+    history.push(i); hintCell = -1; render();
+    preview(i, true);
+  }
+
+  $('undo').onclick = () => { if (!history.length) return; const i = history.pop(); board ^= Lamp.pressMask(P.w, P.h, P.stamp, i % P.w, Math.floor(i / P.w)); render(); };
+  $('reset').onclick = () => { board = P.board; history = []; render(); };
+  $('hint').onclick = () => {
+    const r = Lamp.solve(P.w, P.h, P.stamp, board);
+    if (!r.solvable || r.count === 0) return;
+    for (let j = 0; j < P.w * P.h; j++) if ((r.presses >> BigInt(j)) & 1n) { cells[j].classList.add('hint'); hintCell = j; break; }
+    msg.className = ''; msg.textContent = `From here, ${r.count} press${r.count === 1 ? '' : 'es'} will finish it. Try the dashed cell.`;
+  };
+  $('level').onchange = () => load($('level').value, Math.floor(Math.random() * 1e6) + 1);
+  $('rand').onclick = () => load($('level').value, Math.floor(Math.random() * 1e6) + 1);
+  $('daily').onclick = () => load($('level').value, dailySeed());
+
+  const m = /^#(easy|medium|hard)\/(\d+)$/.exec(location.hash);
+  load(m ? m[1] : 'medium', m ? parseInt(m[2], 10) : dailySeed());
+  window.__stamp = { get state() { return { board, history: history.slice(), P, hintCell }; } };
+})();
+</script>
+</body>
+</html>

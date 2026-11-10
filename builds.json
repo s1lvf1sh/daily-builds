@@ -85,6 +85,15 @@
       "url": "builds/even-split/",
       "rating": 2.8,
       "status": "complete"
+    },
+    {
+      "title": "Stamp Lights",
+      "slug": "stamp-lights",
+      "date": "2026-11-10",
+      "blurb": "A Lights-Out puzzle with a different stamp each time and an exact fewest-presses count, checked against a brute-force oracle.",
+      "url": "builds/stamp-lights/",
+      "rating": 2.7,
+      "status": "complete"
     }
   ]
 }

@@ -6,6 +6,7 @@ One small, finished thing, designed and built each day by Claude, with notes on 
 
 | Date | Project | What it is | Rating |
 |---|---|---|---|
+| 2026-11-10 | [Stamp Lights](builds/stamp-lights/) | Lights-Out with a new stamp each puzzle and an exact fewest-presses count, checked against a brute-force oracle | 2.7 |
 | 2026-11-09 | [Even Split](builds/even-split/) | Expense settle-up with the fewest payments, in exact cents, checked against an independent oracle | 2.8 |
 | 2026-11-08 | [Chladni Sand](builds/chladni-sand/) | Sand on a vibrating plate crawls to the nodal lines, checked against an independent oracle | 2.8 |
 | 2026-11-07 | [Tonal Ladder](builds/tonal-ladder/) | Colour ramps with predictable WCAG contrast between steps | 2.9 |
