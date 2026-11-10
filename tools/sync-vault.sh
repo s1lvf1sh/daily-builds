@@ -5,7 +5,7 @@
 set -euo pipefail
 dest="${1:?usage: sync-vault.sh \"/path/to/vault/AI Projects\"}"
 here="$(cd "$(dirname "$0")/.." && pwd)"
-git -C "$here" pull --ff-only -q || true
+[ -n "${SKIP_PULL:-}" ] || git -C "$here" pull --ff-only -q || echo "WARNING: git pull failed; using the local copy" >&2
 for dir in "$here"/journal/*/; do
   [ -d "$dir" ] || continue
   hub="$(grep -m1 '^title:' "$dir"/*.md 2>/dev/null | head -1 | sed 's/.*title: *//' | sed 's/ - .*//')"
