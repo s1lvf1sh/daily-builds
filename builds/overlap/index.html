@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Overlap: when is everyone at work?</title>
+<style>
+  :root { color-scheme: light dark; --bg:#f5f3ee; --fg:#22252b; --muted:#6f7480; --card:#fff; --line:#d9d6cc; --accent:#1f6f5c; --accent2:#e0a526; --bar:#b9c7d6; --ok:#1f6f5c; --bad:#b4442f; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#14171c; --fg:#e4e6ea; --muted:#8c93a1; --card:#1c2027; --line:#2e343e; --accent:#52c3a4; --accent2:#f0bd4a; --bar:#3b4a5e; --ok:#52c3a4; --bad:#ec7f68; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.45 system-ui,sans-serif; }
+  main { max-width:980px; margin:0 auto; padding:26px 16px 56px; }
+  h1 { margin:0; font-size:28px; letter-spacing:-.01em; } .lede { margin:4px 0 20px; color:var(--muted); }
+  h2 { font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:26px 0 8px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+  .row { display:grid; grid-template-columns: 120px minmax(160px,1.4fr) 92px 92px auto 28px; gap:8px; align-items:center; padding:6px 0; border-bottom:1px solid var(--line); }
+  .row:last-child { border-bottom:0; } .row.head { font-size:12px; color:var(--muted); }
+  input, select, button { font:inherit; color:inherit; background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:5px 7px; min-width:0; width:100%; }
+  button { cursor:pointer; width:auto; } button:hover { border-color:var(--accent); }
+  .days { display:flex; gap:3px; } .days label { display:block; } .days input { display:none; }
+  .days span { display:inline-block; width:26px; text-align:center; padding:4px 0; border:1px solid var(--line); border-radius:5px; cursor:pointer; font-size:12px; color:var(--muted); }
+  .days input:checked + span { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .tools { display:flex; flex-wrap:wrap; gap:14px; align-items:end; margin-top:10px; } .tools label { font-size:12px; color:var(--muted); display:block; } .tools input, .tools select { width:auto; }
+  .x { padding:2px 8px; color:var(--muted); }
+  #answer { font-size:17px; } #answer b { color:var(--accent); } #answer .none b { color:var(--bad); }
+  .win { display:grid; grid-template-columns: 190px 1fr; gap:4px 12px; padding:7px 0; border-bottom:1px solid var(--line); } .win:last-child { border-bottom:0; }
+  .win .when { font-weight:600; white-space:nowrap; } .win .locals { color:var(--muted); font-size:13px; display:flex; flex-wrap:wrap; gap:2px 14px; }
+  .out { color:var(--bad); }
+  .strip { display:grid; grid-template-columns: 74px 1fr; gap:8px; align-items:center; margin:7px 0; font-size:12px; color:var(--muted); }
+  .track { position:relative; height:var(--h); background:repeating-linear-gradient(90deg, transparent 0, transparent calc(100%/24 - 1px), var(--line) calc(100%/24 - 1px), var(--line) calc(100%/24)); border:1px solid var(--line); border-radius:4px; }
+  .seg { position:absolute; top:0; bottom:0; background:var(--bar); opacity:.75; } .seg.hit { background:var(--accent); opacity:1; z-index:2; }
+  .lane { position:absolute; left:0; right:0; } .axis { display:grid; grid-template-columns: 74px 1fr; gap:8px; font-size:11px; color:var(--muted); } .axis div { display:flex; justify-content:space-between; }
+  .legend { font-size:12px; color:var(--muted); margin-top:6px; } .legend i { display:inline-block; width:10px; height:10px; border-radius:2px; vertical-align:-1px; margin:0 3px 0 10px; }
+  .err { color:var(--bad); font-size:13px; }
+  @media (max-width:760px) { .row { grid-template-columns: 1fr 1fr; } .row.head { display:none; } .row .days { grid-column:1 / -1; } .win { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Overlap</h1>
+  <p class="lede">Add the people on your team, their time zones and working hours. Overlap shows every window when all of them are at work, week by week, exact across daylight-saving changes.</p>
+
+  <h2>Who</h2>
+  <div class="card">
+    <div class="row head"><span>Name</span><span>Time zone</span><span>Starts</span><span>Ends</span><span>Days</span><span></span></div>
+    <div id="people"></div>
+    <div class="tools">
+      <button id="add">+ Add person</button><button id="example">Example team</button>
+      <span><label for="from">Week starting</label><input id="from" type="date" /></span>
+      <span><label for="weeks">Look ahead</label><select id="weeks"><option value="1">1 week</option><option value="2">2 weeks</option><option value="4">4 weeks</option></select></span>
+      <span><label for="len">Meeting length</label><select id="len"><option>15</option><option>30</option><option selected>60</option><option>90</option><option>120</option></select></span>
+      <span><label for="view">Show times in</label><input id="view" list="zones" /></span>
+    </div>
+    <div id="err" class="err"></div>
+    <datalist id="zones"></datalist>
+  </div>
+
+  <h2>Answer</h2>
+  <div class="card" id="answer"></div>
+
+  <h2>Week at a glance <span style="text-transform:none;letter-spacing:0">(green: everyone at work)</span></h2>
+  <div class="card" id="strips"></div>
+  <p class="legend">Each row is one day in the "show times in" zone; thin bars above the green one are the individual people in order. Hours of the day run left to right.</p>
+</main>
+<script src="src/overlap.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>

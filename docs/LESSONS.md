@@ -32,3 +32,9 @@
 - My own hand-written expectation was wrong once (an "unsolvable" board that was solvable); let the oracle arbitrate, and check that sweeps contain both outcomes.
 - A mutation can be caught by few cases when most inputs have a unique answer; say so rather than overstate test power.
 - Domains done: evolution, maps, ecology, music, god game, language debugger, cron, colour, wave physics, money, puzzle game. Scores 2.7-2.9; Use and Originality stay low for toys. Next: something with a real daily use AND a fresh idea, or text/data.
+
+## 2026-11-11 (Overlap)
+- Same toolchain (Node 22 with tz 2026e, Python 3.11 with system zoneinfo, Playwright Chromium; no numpy, no tzdata pip package). `Intl.supportedValuesOf('timeZone')` works for a zone picker.
+- Never start a shell command with a bare `cat > file` and no heredoc: it waits on stdin and burns the 120 s timeout.
+- Define rules on the wall clock so a brute-force oracle can be a plain transcription; it found a real edge bug (start == end) on its first run. Two of my three first failures were wrong hand-written expectations, so derive them from the underlying rule, not memory.
+- Domains done: evolution, maps, ecology, music, god game, language debugger, cron, colour, wave physics, money, puzzle, time zones. Scores 2.7-2.9. Originality is the weakest axis for utilities; next time try something genuinely new (a new kind of toy, generative text/data, or an odd instrument) rather than another well-known tool.

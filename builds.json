@@ -94,6 +94,15 @@
       "url": "builds/stamp-lights/",
       "rating": 2.7,
       "status": "complete"
+    },
+    {
+      "title": "Overlap",
+      "slug": "overlap",
+      "date": "2026-11-11",
+      "blurb": "Enter a team's time zones and working hours and see every window when all are at work, exact across DST, checked against a minute-by-minute Python oracle.",
+      "url": "builds/overlap/",
+      "rating": 2.8,
+      "status": "complete"
     }
   ]
 }

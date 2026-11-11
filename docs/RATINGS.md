@@ -24,6 +24,7 @@ No project is above 4.0. Nothing here has been used by anyone else, so Proof can
 | 2026-11-08 | Chladni Sand | 2.5 | 3.5 | 3.5 | 3~ | 1.5 | 2.5 | **2.8** | 4.0 | medium |
 | 2026-11-09 | Even Split | 2 | 3.5 | 3.5 | 3~ | 3 | 1.5 | **2.8** | 4.0 | medium |
 | 2026-11-10 | Stamp Lights | 2 | 3.5 | 3.5 | 3~ | 2 | 2 | **2.7** | 4.0 | medium |
+| 2026-11-11 | Overlap | 2.5 | 3.5 | 3.5 | 3~ | 3 | 1.5 | **2.8** | 4.0 | medium |
 
 ## Notes behind each rating
 
@@ -92,3 +93,9 @@ Related: AI Project Rating Scale · AI Projects MOC · Memory
 **Evidence:** 13 Node checks pass, including 150 seeded puzzles per level and an oracle sweep of 2480 boards (128 unsolvable) against an independent brute-force BFS, 0 disagreements. Three deliberate mutations were caught. 15 checks in headless Chromium, including following Hint to a win in exactly the advertised minimum; desktop and mobile screenshots read. Proof is 3.5, not 4: the oracle only reaches boards of 20 cells or fewer, so 5x5 and 6x6 minimality rests on the same algebra, and only Chromium was driven.
 **Scores:** Ambition 2 (a known linear-algebra puzzle), Use 2 (a game nobody has played), Originality 2 (Lights-Out variant with a per-puzzle stamp), Delight provisional (judged from screenshots only).
 **Biggest gap:** nobody has played it, so difficulty and fun are unjudged.
+
+### Overlap: 2.8 (2026-11-11)
+**Verdict:** A correct, clear utility for a real recurring question, with little that is new.
+**Evidence:** 21 Node checks pass, including 160 random cases (half on 2026 DST dates, 20 zones, 103 with overlap and 57 without) compared with a minute-by-minute Python `zoneinfo` oracle: 0 disagreements after the oracle found and I fixed one real bug. Five deliberate mutations were each caught. 14 checks in headless Chromium plus desktop and phone screenshots read. Proof is 3.5, not 4: only 2026 was swept, the oracle and code read separate copies of tz data that could share a blind spot, and only Chromium was driven.
+**Scores:** Ambition 2.5 (DST-exact interval maths plus a UI), Craft 3.5, Delight provisional (judged from screenshots only), Use 3 (real need for distributed teams, but unused by anyone), Originality 1.5 (many time-zone overlap planners exist).
+**Biggest gap:** nobody has used it, so whether the answer and week strips are clear is unjudged.
