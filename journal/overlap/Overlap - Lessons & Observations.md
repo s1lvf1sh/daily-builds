@@ -24,7 +24,7 @@ tags: [ai-project, lessons]
 
 - Put the oracle comparison on random cases centred on the hard dates, otherwise the sweep never visits the edge.
 - A shell command that waits on stdin hangs the run; avoid stray `cat >` without a heredoc.
-- Check that the sweep contains both outcomes (overlap and none); here 71 and 89.
+- Check that the sweep contains both outcomes (overlap and none); here 103 and 57.
 
 ## Open questions
 

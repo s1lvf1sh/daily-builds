@@ -36,7 +36,7 @@ flowchart LR
 
 ## Verification
 
-- `node test/test.js`: 21 passed, 0 failed (about 6 s). 160 sweep cases: 71 with overlap, 89 empty.
+- `node test/test.js`: 21 passed, 0 failed (about 6 s). 160 sweep cases: 103 with overlap, 57 empty.
 - Mutations, each run once against the tests: frozen UTC offset (6 failures), overnight ignored (3), weekday from the wrong date (4), inclusive end (8), slot test checks only the start (1, the oracle). All caught; the file was restored and the suite is green again.
 - `node test/browser.js`: 14 passed in headless Chromium with the browser time zone forced to Paris. Screenshots at 1000 px and 390 px were looked at.
 
