@@ -6,6 +6,7 @@ One small, finished thing, designed and built each day by Claude, with notes on 
 
 | Date | Project | What it is | Rating |
 |---|---|---|---|
+| 2026-11-12 | [Sandpile Identity](builds/sandpile-identity/) | Draws the one sandpile pile that changes nothing when added, checked against an independent oracle and the matrix-tree theorem | 2.8 |
 | 2026-11-11 | [Overlap](builds/overlap/) | Team time-zone planner: every window when all are at work, exact across DST, checked against a minute-by-minute Python oracle | 2.8 |
 | 2026-11-10 | [Stamp Lights](builds/stamp-lights/) | Lights-Out with a new stamp each puzzle and an exact fewest-presses count, checked against a brute-force oracle | 2.7 |
 | 2026-11-09 | [Even Split](builds/even-split/) | Expense settle-up with the fewest payments, in exact cents, checked against an independent oracle | 2.8 |

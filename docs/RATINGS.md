@@ -25,6 +25,7 @@ No project is above 4.0. Nothing here has been used by anyone else, so Proof can
 | 2026-11-09 | Even Split | 2 | 3.5 | 3.5 | 3~ | 3 | 1.5 | **2.8** | 4.0 | medium |
 | 2026-11-10 | Stamp Lights | 2 | 3.5 | 3.5 | 3~ | 2 | 2 | **2.7** | 4.0 | medium |
 | 2026-11-11 | Overlap | 2.5 | 3.5 | 3.5 | 3~ | 3 | 1.5 | **2.8** | 4.0 | medium |
+| 2026-11-12 | Sandpile Identity | 2.5 | 3.5 | 3.5 | 3~ | 1.5 | 3 | **2.8** | 4.0 | medium |
 
 ## Notes behind each rating
 
@@ -99,3 +100,9 @@ Related: AI Project Rating Scale · AI Projects MOC · Memory
 **Evidence:** 21 Node checks pass, including 160 random cases (half on 2026 DST dates, 20 zones, 103 with overlap and 57 without) compared with a minute-by-minute Python `zoneinfo` oracle: 0 disagreements after the oracle found and I fixed one real bug. Five deliberate mutations were each caught. 14 checks in headless Chromium plus desktop and phone screenshots read. Proof is 3.5, not 4: only 2026 was swept, the oracle and code read separate copies of tz data that could share a blind spot, and only Chromium was driven.
 **Scores:** Ambition 2.5 (DST-exact interval maths plus a UI), Craft 3.5, Delight provisional (judged from screenshots only), Use 3 (real need for distributed teams, but unused by anyone), Originality 1.5 (many time-zone overlap planners exist).
 **Biggest gap:** nobody has used it, so whether the answer and week strips are clear is unjudged.
+
+### Sandpile Identity: 2.8 (2026-11-12)
+**Verdict:** A striking, well-checked maths toy; little practical use and no users yet.
+**Evidence:** 134 Node checks pass, including identity vs a slower independent oracle on 11 grid sizes, brute-force group identity and recurrent counts on five tiny grids matching the matrix-tree determinant (100352 for 3x3), and e+a=a sweeps to 61x61. Four mutations caught; one equivalent mutant survived. 17 checks in headless Chromium, desktop and phone screenshots read. Proof is 3.5, not 4: the oracle comparison stops at 25x13, same author, Chromium only.
+**Scores:** Ambition 2.5, Craft 3.5, Proof 3.5, Delight 3~ (judged from screenshots), Use 1.5 (a toy), Originality 3 (sandpile images exist; the live identity check is the fresh part). Mean 2.83, so 2.8 (cap 4.0).
+**Biggest gap:** no one has used it, and the identity is verified against an oracle only up to 25x13.

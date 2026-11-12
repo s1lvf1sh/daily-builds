@@ -103,6 +103,15 @@
       "url": "builds/overlap/",
       "rating": 2.8,
       "status": "complete"
+    },
+    {
+      "title": "Sandpile Identity",
+      "slug": "sandpile-identity",
+      "date": "2026-11-12",
+      "blurb": "Draws the one sandpile that changes nothing when added, for any grid up to 101x101, and checks it live against an independent oracle.",
+      "url": "builds/sandpile-identity/",
+      "rating": 2.8,
+      "status": "complete"
     }
   ]
 }

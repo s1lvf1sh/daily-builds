@@ -38,3 +38,9 @@
 - Never start a shell command with a bare `cat > file` and no heredoc: it waits on stdin and burns the 120 s timeout.
 - Define rules on the wall clock so a brute-force oracle can be a plain transcription; it found a real edge bug (start == end) on its first run. Two of my three first failures were wrong hand-written expectations, so derive them from the underlying rule, not memory.
 - Domains done: evolution, maps, ecology, music, god game, language debugger, cron, colour, wave physics, money, puzzle, time zones. Scores 2.7-2.9. Originality is the weakest axis for utilities; next time try something genuinely new (a new kind of toy, generative text/data, or an odd instrument) rather than another well-known tool.
+
+## 2026-11-12 (Sandpile Identity)
+- Same toolchain (Node 22, Python 3.11, Playwright Chromium; no numpy). A pure-Python oracle with Fraction determinants works.
+- Best oracle pattern so far: check a count against a second characterisation (matrix-tree theorem) plus brute-force from the definition, not just a re-implementation.
+- A surviving mutant may be equivalent; reason about it and swap it for a real one rather than adding tests blindly.
+- Algebra/art toys give Delight a chance at the same cost as utilities. Domains done: evolution, maps, ecology, music, god game, language debugger, cron, colour, wave physics, money, puzzle, time zones, cellular/sandpile. Next: text/data or an instrument; keep Use in mind.

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sandpile Identity: the pile that changes nothing</title>
+<style>
+  :root { color-scheme: light dark; --bg:#f4f1ea; --fg:#23262c; --muted:#6d7280; --card:#fff; --line:#d8d4c8; --accent:#7a3fa0; --ok:#1f6f5c; --bad:#b4442f; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#14161b; --fg:#e4e6ea; --muted:#8c93a1; --card:#1c1f26; --line:#2e333d; --accent:#c08be6; --ok:#52c3a4; --bad:#ec7f68; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.5 system-ui,sans-serif; }
+  main { max-width:1000px; margin:0 auto; padding:24px 16px 48px; display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:20px; }
+  header { grid-column:1/-1; } h1 { margin:0; font-size:28px; letter-spacing:-.01em; } .lede { margin:4px 0 0; color:var(--muted); max-width:70ch; }
+  .stage { align-self:start; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px; } canvas { width:100%; height:auto; aspect-ratio:1; image-rendering:pixelated; display:block; border-radius:4px; background:#000; cursor:crosshair; }
+  .side { display:flex; flex-direction:column; gap:12px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; } .card h2 { margin:0 0 6px; font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+  button, select, input { font:inherit; color:inherit; background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:5px 9px; } button { cursor:pointer; } button:hover { border-color:var(--accent); } button.main { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .btns { display:flex; flex-wrap:wrap; gap:6px; } label { display:block; font-size:13px; color:var(--muted); } input[type=range] { width:100%; padding:0; }
+  #msg { min-height:3em; } .good { color:var(--ok); } .badc { color:var(--bad); }
+  .key { display:flex; gap:10px; font-size:12px; color:var(--muted); } .key i { display:inline-block; width:12px; height:12px; border-radius:3px; vertical-align:-2px; margin-right:3px; border:1px solid var(--line); }
+  details { color:var(--muted); font-size:14px; } details p { margin:6px 0; }
+  @media (max-width:800px) { main { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>Sandpile Identity</h1>
+  <p class="lede">Every cell holds 0–3 grains. A cell with 4 gives one grain to each neighbour; the edge swallows what falls off. Some piles are special: add one to another pile and the result is that pile again. Hidden inside every grid is a <b>single pile that changes nothing when added</b>. Draw it, then check it.</p>
+</header>
+<section class="stage"><canvas id="cv" width="64" height="64" aria-label="Sandpile grid"></canvas></section>
+<aside class="side">
+  <div class="card"><h2>Grid</h2>
+    <label>Width <b id="wv"></b><input id="w" type="range" min="1" max="101" value="43" /></label>
+    <label>Height <b id="hv"></b><input id="h" type="range" min="1" max="101" value="43" /></label>
+    <label><input id="sq" type="checkbox" checked /> keep square</label>
+  </div>
+  <div class="card"><h2>Piles</h2>
+    <div class="btns">
+      <button id="bId" class="main">Show the identity</button>
+      <button id="bAddId">Add identity to pile</button>
+      <button id="bRand">Random recurrent pile</button>
+      <button id="bFull">All 3</button>
+      <button id="bClear">Clear</button>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin:8px 0 0">Click or drag on the grid to drop 20 grains per cell (shift: 1).</p>
+    <label>Speed <input id="speed" type="range" min="1" max="60" value="12" /></label>
+    <div class="key"><span><i style="background:#14213d"></i>0</span><span><i style="background:#2a9d8f"></i>1</span><span><i style="background:#e9c46a"></i>2</span><span><i style="background:#e76f51"></i>3</span></div>
+  </div>
+  <div class="card"><h2>Checks on this pile</h2><div id="msg">Press “Show the identity”.</div><div class="btns" style="margin-top:6px"><button id="bCheck">Run checks</button></div></div>
+  <details class="card"><summary>What is going on?</summary>
+    <p>Stack piles and let them topple: this is addition. Piles that you can reach again and again by adding grains (the “recurrent” ones) form a finite group under it. A group has an identity: a pile e with e + a = a for every recurrent a.</p>
+    <p>It is found as e = s(2c − s(2c)), where c is the all-3 pile and s(·) means “topple until stable”. It is symmetric but looks nothing like its formula.</p>
+    <p>“Add identity to pile” works only on recurrent piles; on any other pile you will watch it change.</p>
+  </details>
+</aside>
+</main>
+<script src="src/sandpile.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>
