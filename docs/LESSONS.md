@@ -44,3 +44,9 @@
 - Best oracle pattern so far: check a count against a second characterisation (matrix-tree theorem) plus brute-force from the definition, not just a re-implementation.
 - A surviving mutant may be equivalent; reason about it and swap it for a real one rather than adding tests blindly.
 - Algebra/art toys give Delight a chance at the same cost as utilities. Domains done: evolution, maps, ecology, music, god game, language debugger, cron, colour, wave physics, money, puzzle, time zones, cellular/sandpile. Next: text/data or an instrument; keep Use in mind.
+
+## 2026-11-13 (Regex Twins)
+- Same toolchain (Node 22, Python 3.11, Playwright Chromium; no numpy). When you re-implement something the platform already has (here regex), the built-in engine is a free oracle: sweep 20 million pairs in seconds.
+- Make the random generator obey the target's grammar; it exposed two parser differences from JS in minutes.
+- Playwright: `innerText` omits CSS `::after` content, and a hash-only `goto` does not reload; add `reload()`. Add `min-width:0; overflow-x:auto` to grid cards to stop phone overflow.
+- Verify what the tool prints (counterexamples), not just the algorithm. Domains done: ... + automata/text. Scores are stuck near 3.0; next try an instrument or a generative piece, or get Use up via a tool with wider input.

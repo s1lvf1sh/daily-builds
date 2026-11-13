@@ -26,6 +26,7 @@ No project is above 4.0. Nothing here has been used by anyone else, so Proof can
 | 2026-11-10 | Stamp Lights | 2 | 3.5 | 3.5 | 3~ | 2 | 2 | **2.7** | 4.0 | medium |
 | 2026-11-11 | Overlap | 2.5 | 3.5 | 3.5 | 3~ | 3 | 1.5 | **2.8** | 4.0 | medium |
 | 2026-11-12 | Sandpile Identity | 2.5 | 3.5 | 3.5 | 3~ | 1.5 | 3 | **2.8** | 4.0 | medium |
+| 2026-11-13 | Regex Twins | 3 | 3.5 | 3.5 | 3~ | 2.5 | 2.5 | **3.0** | 4.0 | medium |
 
 ## Notes behind each rating
 
@@ -106,3 +107,9 @@ Related: AI Project Rating Scale · AI Projects MOC · Memory
 **Evidence:** 134 Node checks pass, including identity vs a slower independent oracle on 11 grid sizes, brute-force group identity and recurrent counts on five tiny grids matching the matrix-tree determinant (100352 for 3x3), and e+a=a sweeps to 61x61. Four mutations caught; one equivalent mutant survived. 17 checks in headless Chromium, desktop and phone screenshots read. Proof is 3.5, not 4: the oracle comparison stops at 25x13, same author, Chromium only.
 **Scores:** Ambition 2.5, Craft 3.5, Proof 3.5, Delight 3~ (judged from screenshots), Use 1.5 (a toy), Originality 3 (sandpile images exist; the live identity check is the fresh part). Mean 2.83, so 2.8 (cap 4.0).
 **Biggest gap:** no one has used it, and the identity is verified against an oracle only up to 25x13.
+
+### Regex Twins: 3.0 (2026-11-13)
+**Verdict:** A correct, exact tool for a real developer question, held back by a narrow syntax and no users.
+**Evidence:** 800 Node checks pass, including about 20.6 million regex/string pairs compared with JavaScript's native `RegExp` (0 mismatches), 4000 verdicts compared with Python `re` (0 mismatches), and 200 equivalence pairs whose printed counterexamples were each re-run natively and checked shortest. Five mutations caught. 16 checks in headless Chromium plus desktop and phone screenshots read. Proof is 3.5, not 4: both parsers are mine so a shared misreading of syntax outside the generator's grammar is possible, "equal" verdicts are brute-forced only to length 6, and only Chromium was driven.
+**Scores:** Ambition 3 (parser, NFA, DFA, minimiser, product search, counting, drawing), Craft 3.5, Proof 3.5, Delight 3~ (screenshots only), Use 2.5 (real need, but anchors, lookahead and Unicode are rejected), Originality 2.5 (equivalence checkers exist; the live counterexample, counts and drawing are the fresh combination). Mean 3.0 (cap 4.0).
+**Biggest gap:** nobody has used it, and the supported syntax excludes much of what people write.

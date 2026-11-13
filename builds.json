@@ -112,6 +112,15 @@
       "url": "builds/sandpile-identity/",
       "rating": 2.8,
       "status": "complete"
+    },
+    {
+      "title": "Regex Twins",
+      "slug": "regex-twins",
+      "date": "2026-11-13",
+      "blurb": "Type two regular expressions and learn exactly whether they match the same strings, or the shortest string that separates them, checked against JS RegExp and Python re.",
+      "url": "builds/regex-twins/",
+      "rating": 3.0,
+      "status": "complete"
     }
   ]
 }

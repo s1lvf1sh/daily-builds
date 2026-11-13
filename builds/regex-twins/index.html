@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Regex Twins: are two patterns the same?</title>
+<style>
+  :root { color-scheme: light dark; --bg:#f4f2ec; --fg:#22252b; --muted:#6c717d; --card:#fff; --line:#d8d4c8; --a:#1f6f8f; --b:#b5562a; --ok:#1f7a4d; --bad:#b4442f; --mono:ui-monospace,SFMono-Regular,Menlo,monospace; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#14171c; --fg:#e4e6ea; --muted:#8c93a1; --card:#1c2027; --line:#2e343e; --a:#6cc0e5; --b:#f19a6b; --ok:#5fd09a; --bad:#ef8670; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.45 system-ui,sans-serif; }
+  main { max-width:1000px; margin:0 auto; padding:26px 16px 56px; }
+  h1 { margin:0; font-size:28px; letter-spacing:-.01em; } .lede { margin:4px 0 18px; color:var(--muted); max-width:70ch; }
+  h2 { font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:0 0 8px; }
+  .card { min-width:0; overflow-x:auto; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media (max-width:720px) { .pair, .pair2 { grid-template-columns:1fr !important; } }
+  label { font-size:12px; font-weight:600; display:block; margin-bottom:4px; }
+  .la { color:var(--a); } .lb { color:var(--b); }
+  input[type=text] { width:100%; font:16px var(--mono); padding:9px 10px; color:inherit; background:var(--bg); border:2px solid var(--line); border-radius:8px; }
+  #ra { border-color:var(--a); } #rb { border-color:var(--b); }
+  .err { color:var(--bad); font-size:13px; min-height:18px; margin-top:4px; }
+  #verdict { margin:14px 0; font-size:18px; font-weight:600; padding:14px; border-radius:10px; border:2px solid var(--line); background:var(--card); }
+  #verdict.same { border-color:var(--ok); } #verdict.diff { border-color:var(--bad); }
+  #verdict small { display:block; font-weight:400; font-size:14px; color:var(--muted); margin-top:4px; }
+  code, .s { font-family:var(--mono); background:var(--bg); border:1px solid var(--line); padding:1px 6px; border-radius:5px; white-space:pre; }
+  .s.empty::after { content:'(empty string)'; color:var(--muted); font-family:system-ui; }
+  .pair2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+  ul.ex { list-style:none; margin:6px 0 0; padding:0; display:flex; flex-wrap:wrap; gap:6px; }
+  table { border-collapse:collapse; font-size:13px; width:100%; } td, th { text-align:left; padding:2px 8px 2px 0; } th { color:var(--muted); font-weight:500; }
+  svg { width:100%; height:auto; background:var(--bg); border:1px solid var(--line); border-radius:8px; margin-top:8px; }
+  .meta { font-size:13px; color:var(--muted); margin:4px 0; }
+  .tester { margin-top:12px; } .tester .res { margin-top:6px; font-size:14px; }
+  .yes { color:var(--ok); font-weight:600; } .no { color:var(--bad); font-weight:600; }
+  .presets { margin:0 0 14px; font-size:13px; color:var(--muted); } .presets button { font:inherit; font-size:13px; margin:2px 4px 2px 0; padding:3px 9px; border:1px solid var(--line); border-radius:99px; background:var(--card); color:var(--fg); cursor:pointer; }
+  .presets button:hover, .presets button:focus-visible { border-color:var(--fg); }
+  footer code { white-space:normal; }
+  footer { margin-top:24px; font-size:13px; color:var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Regex Twins</h1>
+  <p class="lede">Type two regular expressions. It does not test them on samples: it builds the exact machine for each and tells you whether they match the same strings. When they don't, it gives you the shortest string that tells them apart.</p>
+  <div class="presets" id="presets">Try: </div>
+  <div class="pair">
+    <div class="card"><label class="la" for="ra">Pattern A</label><input type="text" id="ra" spellcheck="false" autocomplete="off" /><div class="err" id="ea"></div></div>
+    <div class="card"><label class="lb" for="rb">Pattern B</label><input type="text" id="rb" spellcheck="false" autocomplete="off" /><div class="err" id="eb"></div></div>
+  </div>
+  <div id="verdict" role="status" aria-live="polite"></div>
+  <div class="pair2" id="details"></div>
+  <div class="card tester"><h2>Try a string on both</h2>
+    <input type="text" id="probe" spellcheck="false" autocomplete="off" placeholder="type any text" aria-label="test string" />
+    <div class="res" id="probeRes"></div></div>
+  <div class="pair2" id="graphs"></div>
+  <footer>Supported: literals, <code>.</code> <code>[a-z] [^…]</code> <code>\d \w \s \D \W \S</code> <code>| ( ) (?:)</code> <code>* + ? {n} {n,} {n,m}</code>. The whole string must match, over printable ASCII (space to ~). Not supported because they are not regular: backreferences, lookaround, anchors, word boundaries.</footer>
+</main>
+<script src="src/regex.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const PRESETS = [
+    ['(a|b)*', '(a*b*)*'], ['a+', 'aa*'], ['a+', 'a*'], ['\\d{3}-\\d{4}', '[0-9]{3}-[0-9]{4}'],
+    ['[a-z]+@[a-z]+', '\\w+@\\w+'], ['(ab)*', 'a(ba)*b?'], ['x{2,4}', 'xx|xxx|xxxx'], ['.*a.*', '[^a]*a.*']
+  ];
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const show = (s) => s === '' ? '<span class="s empty"></span>' : '<span class="s">' + esc(s.replace(/ /g, '␣')) + '</span>';
+  let A = null, B = null;
+
+  function compileSafe(src, errEl) {
+    errEl.textContent = '';
+    if (src === '') return null;
+    try { return R.compile(src); } catch (e) { errEl.textContent = e instanceof R.RegexError ? e.message + (e.pos != null && e.pos >= 0 ? ' (at position ' + (e.pos + 1) + ')' : '') : String(e); return null; }
+  }
+  const R = RegexTwins;
+
+  function details(d, cls, name) {
+    const ex = R.examples(d, 8), n = R.countByLength(d, 6);
+    const live = d.trans.length - d.dead.filter(Boolean).length;
+    let h = '<div class="card"><h2 class="' + cls + '">' + name + ' in detail</h2>';
+    if (!ex.length) h += '<p class="meta">Matches nothing at all.</p>';
+    else h += '<div class="meta">Shortest matches:</div><ul class="ex">' + ex.map((e) => '<li>' + show(e) + '</li>').join('') + '</ul>';
+    h += '<div class="meta">' + (R.isFinite(d) ? (ex.length ? 'Matches a finite set of strings.' : '') : 'Matches infinitely many strings.') + ' Smallest machine: ' + live + ' state' + (live === 1 ? '' : 's') + '.</div>';
+    h += '<table><tr><th>length</th>' + n.map((_, i) => '<th>' + i + '</th>').join('') + '</tr><tr><th>strings</th>' + n.map((v) => '<td>' + v.toLocaleString() + '</td>').join('') + '</tr></table></div>';
+    return h;
+  }
+
+  function graph(d, color) {
+    const ids = d.trans.map((_, i) => i).filter((i) => !d.dead[i]);
+    if (!ids.length) return '<p class="meta">Nothing to draw.</p>';
+    if (ids.length > 14) return '<p class="meta">The machine has ' + ids.length + ' live states: too many to draw legibly.</p>';
+    const dep = new Map([[0, 0]]), q = [0];
+    for (let h = 0; h < q.length; h++) for (const e of R.edges(d)) if (e.from === q[h] && !dep.has(e.to)) { dep.set(e.to, dep.get(q[h]) + 1); q.push(e.to); }
+    const cols = {}; ids.forEach((i) => { const c = dep.get(i) ?? 0; (cols[c] = cols[c] || []).push(i); });
+    const nc = Math.max(...Object.keys(cols).map(Number)) + 1, rows = Math.max(...Object.values(cols).map((c) => c.length));
+    const W = Math.max(420, nc * 120 + 40), H = Math.max(150, rows * 80 + 40), pos = {};
+    for (const [c, list] of Object.entries(cols)) list.forEach((s, r) => { pos[s] = [40 + c * 120, (H / (list.length + 1)) * (r + 1)]; });
+    let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="state machine"><defs><marker id="m' + color + '" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="' + color + '"/></marker></defs>';
+    svg += '<path d="M2,' + pos[0][1] + ' L' + (pos[0][0] - 16) + ',' + pos[0][1] + '" stroke="' + color + '" marker-end="url(#m' + color + ')"/>';
+    const E = R.edges(d), pair = new Set(E.map((e) => e.from + '>' + e.to));
+    for (const e of E) {
+      const [x1, y1] = pos[e.from], [x2, y2] = pos[e.to];
+      let path, lx, ly;
+      if (e.from === e.to) { path = 'M' + (x1 - 8) + ',' + (y1 - 14) + ' C' + (x1 - 26) + ',' + (y1 - 50) + ' ' + (x1 + 26) + ',' + (y1 - 50) + ' ' + (x1 + 8) + ',' + (y1 - 14); lx = x1; ly = y1 - 48; }
+      else {
+        const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len, bend = pair.has(e.to + '>' + e.from) ? 22 : (x2 <= x1 ? 34 : 0);
+        const sx = x1 + ux * 15, sy = y1 + uy * 15, ex = x2 - ux * 17, ey = y2 - uy * 17;
+        const cx = (sx + ex) / 2 - uy * bend, cy = (sy + ey) / 2 + ux * bend;
+        path = 'M' + sx + ',' + sy + ' Q' + cx + ',' + cy + ' ' + ex + ',' + ey; lx = (sx + 2 * cx + ex) / 4; ly = (sy + 2 * cy + ey) / 4 - 4;
+      }
+      svg += '<path d="' + path + '" fill="none" stroke="' + color + '" stroke-width="1.4" marker-end="url(#m' + color + ')"/><text x="' + lx + '" y="' + ly + '" text-anchor="middle" font-size="11" font-family="ui-monospace,monospace" fill="currentColor" paint-order="stroke" stroke="var(--bg)" stroke-width="3">' + esc(e.label) + '</text>';
+    }
+    for (const s of ids) {
+      const [x, y] = pos[s];
+      svg += '<circle cx="' + x + '" cy="' + y + '" r="14" fill="var(--card)" stroke="' + color + '" stroke-width="2"/>' + (d.acc[s] ? '<circle cx="' + x + '" cy="' + y + '" r="10" fill="none" stroke="' + color + '"/>' : '') + '<text x="' + x + '" y="' + (y + 4) + '" text-anchor="middle" font-size="11" fill="currentColor">' + s + '</text>';
+    }
+    return svg + '</svg><div class="meta">Double circle = a match ends here. Transitions into a dead end are left out.</div>';
+  }
+
+  function probe() {
+    const s = $('probe').value, out = [];
+    const verdict = (d, n, cls) => d ? '<span class="' + cls + '">' + n + ': ' + (R.accepts(d, s) ? '<span class="yes">match</span>' : '<span class="no">no match</span>') + '</span>' : '';
+    $('probeRes').innerHTML = [verdict(A, 'A', 'la'), verdict(B, 'B', 'lb')].filter(Boolean).join(' &nbsp; ');
+  }
+
+  function update() {
+    const sa = $('ra').value, sb = $('rb').value;
+    A = compileSafe(sa, $('ea')); B = compileSafe(sb, $('eb'));
+    const v = $('verdict'); v.className = ''; $('details').innerHTML = ''; $('graphs').innerHTML = '';
+    try { history.replaceState(null, '', '#' + encodeURIComponent(JSON.stringify([sa, sb]))); } catch (e) {}
+    probe();
+    if (!A || !B) { v.innerHTML = 'Enter two valid patterns.'; if (A) { $('details').innerHTML = details(A, 'la', 'A'); $('graphs').innerHTML = '<div class="card">' + graph(A, '#1f6f8f') + '</div>'; } if (B) { $('details').innerHTML = details(B, 'lb', 'B'); $('graphs').innerHTML = '<div class="card">' + graph(B, '#b5562a') + '</div>'; } return; }
+    const c = R.compare(A, B);
+    if (c.equal) { v.className = 'same'; v.innerHTML = 'Twins: they match exactly the same strings.<small>Proved over every possible string, not sampled. Both reduce to the same smallest machine (' + (A.trans.length - A.dead.filter(Boolean).length) + ' states).</small>'; }
+    else {
+      v.className = 'diff';
+      const parts = [];
+      if (c.onlyA !== null) parts.push('only <b class="la">A</b> matches ' + show(c.onlyA));
+      if (c.onlyB !== null) parts.push('only <b class="lb">B</b> matches ' + show(c.onlyB));
+      v.innerHTML = 'Not the same.<small>Shortest strings that tell them apart: ' + parts.join(', and ') + '.</small>';
+    }
+    $('details').innerHTML = details(A, 'la', 'A') + details(B, 'lb', 'B');
+    $('graphs').innerHTML = '<div class="card"><h2 class="la">Machine A</h2>' + graph(A, '#1f6f8f') + '</div><div class="card"><h2 class="lb">Machine B</h2>' + graph(B, '#b5562a') + '</div>';
+  }
+
+  const ps = $('presets');
+  PRESETS.forEach(([a, b]) => { const bt = document.createElement('button'); bt.type = 'button'; bt.textContent = a + '  ≟  ' + b; bt.onclick = () => { $('ra').value = a; $('rb').value = b; update(); }; ps.appendChild(bt); });
+  $('ra').addEventListener('input', update); $('rb').addEventListener('input', update); $('probe').addEventListener('input', probe);
+  let init = PRESETS[0];
+  try { const h = decodeURIComponent(location.hash.slice(1)); if (h) { const j = JSON.parse(h); if (Array.isArray(j) && typeof j[0] === 'string' && typeof j[1] === 'string') init = j; } } catch (e) {}
+  $('ra').value = init[0]; $('rb').value = init[1]; update();
+})();
+</script>
+</body>
+</html>
