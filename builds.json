@@ -121,6 +121,15 @@
       "url": "builds/regex-twins/",
       "rating": 3.0,
       "status": "complete"
+    },
+    {
+      "title": "Tuning Fit",
+      "slug": "tuning-fit",
+      "date": "2026-11-14",
+      "blurb": "Enter the pure ratios you care about and find which equal tuning (any number of steps, any repeating interval) fits them best, then hear pure against tempered; checked against an exact big-integer oracle.",
+      "url": "builds/tuning-fit/",
+      "rating": 2.8,
+      "status": "complete"
     }
   ]
 }

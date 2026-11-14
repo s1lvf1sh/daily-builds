@@ -27,6 +27,7 @@ No project is above 4.0. Nothing here has been used by anyone else, so Proof can
 | 2026-11-11 | Overlap | 2.5 | 3.5 | 3.5 | 3~ | 3 | 1.5 | **2.8** | 4.0 | medium |
 | 2026-11-12 | Sandpile Identity | 2.5 | 3.5 | 3.5 | 3~ | 1.5 | 3 | **2.8** | 4.0 | medium |
 | 2026-11-13 | Regex Twins | 3 | 3.5 | 3.5 | 3~ | 2.5 | 2.5 | **3.0** | 4.0 | medium |
+| 2026-11-14 | Tuning Fit | 2 | 3 | 3.5 | 3~ | 2.5 | 2.5 | **2.8** | 4.0 | medium |
 
 ## Notes behind each rating
 
@@ -113,3 +114,9 @@ Related: AI Project Rating Scale · AI Projects MOC · Memory
 **Evidence:** 800 Node checks pass, including about 20.6 million regex/string pairs compared with JavaScript's native `RegExp` (0 mismatches), 4000 verdicts compared with Python `re` (0 mismatches), and 200 equivalence pairs whose printed counterexamples were each re-run natively and checked shortest. Five mutations caught. 16 checks in headless Chromium plus desktop and phone screenshots read. Proof is 3.5, not 4: both parsers are mine so a shared misreading of syntax outside the generator's grammar is possible, "equal" verdicts are brute-forced only to length 6, and only Chromium was driven.
 **Scores:** Ambition 3 (parser, NFA, DFA, minimiser, product search, counting, drawing), Craft 3.5, Proof 3.5, Delight 3~ (screenshots only), Use 2.5 (real need, but anchors, lookahead and Unicode are rejected), Originality 2.5 (equivalence checkers exist; the live counterexample, counts and drawing are the fresh combination). Mean 3.0 (cap 4.0).
 **Biggest gap:** nobody has used it, and the supported syntax excludes much of what people write.
+
+### Tuning Fit: 2.8 (2026-11-14)
+**Verdict:** An exact, small tool for a niche question (which equal tuning fits these ratios), with untested sound and no users.
+**Evidence:** 56 Node checks pass, including 6,715 cases compared with an exact big-integer oracle (0 mismatches, max 1.4e-12 cents), literature values for 12, 31 and 53 divisions, and brute-force record checks. Five of six mutations caught; the sixth is equivalent, and one survivor (RMS divisor) exposed a real gap that was then closed. 17 checks in headless Chromium plus a desktop screenshot read; the phone screenshot was only checked for horizontal overflow. Proof is 3.5, not 4: nobody has listened to the audio (I only recorded requested frequencies), only Chromium was driven, and the parser is mine.
+**Scores:** Ambition 2 (known arithmetic, one engine, one page), Craft 3, Proof 3.5, Delight 3~ (screenshot only, sound unheard), Use 2.5 (real for microtonal hobbyists, narrow), Originality 2.5 (EDO calculators exist; arbitrary equave plus record-holders plus pure-vs-tempered playback is a modest combination). Mean 2.75, rounded up to 2.8 (cap 4.0).
+**Biggest gap:** nobody has heard it or used it, so the audio and the usefulness are untested.

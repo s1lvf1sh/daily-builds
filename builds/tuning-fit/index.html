@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tuning Fit: which equal tuning suits your intervals?</title>
+<style>
+  :root { color-scheme: light dark; --bg:#f5f3ee; --fg:#23262c; --muted:#6a6f7b; --card:#fff; --line:#d9d5c9; --acc:#7a3fa0; --good:#1f7a4d; --warn:#b5762a; --bad:#b4442f; --mono:ui-monospace,SFMono-Regular,Menlo,monospace; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#15171c; --fg:#e5e6ea; --muted:#8d93a0; --card:#1d2027; --line:#2f343e; --acc:#c79be6; --good:#5fd09a; --warn:#e5b06b; --bad:#ef8670; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.45 system-ui,sans-serif; }
+  main { max-width:980px; margin:0 auto; padding:26px 16px 56px; }
+  h1 { margin:0; font-size:28px; letter-spacing:-.01em; } .lede { margin:4px 0 16px; color:var(--muted); max-width:72ch; }
+  h2 { font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:0 0 8px; }
+  .card { min-width:0; overflow-x:auto; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:12px; }
+  .row { display:grid; grid-template-columns:1fr 150px 130px; gap:12px; } @media (max-width:720px) { .row { grid-template-columns:1fr; } }
+  label { font-size:12px; font-weight:600; display:block; margin-bottom:4px; }
+  input[type=text], input[type=number], select { width:100%; font:16px var(--mono); padding:8px 10px; color:inherit; background:var(--bg); border:2px solid var(--line); border-radius:8px; }
+  .err { color:var(--bad); font-size:13px; min-height:18px; margin-top:4px; }
+  .presets { font-size:13px; color:var(--muted); margin-bottom:12px; } .presets button, button.b { font:inherit; font-size:13px; margin:2px 4px 2px 0; padding:4px 10px; border:1px solid var(--line); border-radius:99px; background:var(--card); color:var(--fg); cursor:pointer; }
+  button:hover, button:focus-visible { border-color:var(--acc); } button.on { border-color:var(--acc); background:var(--acc); color:var(--bg); }
+  table { border-collapse:collapse; width:100%; font-size:14px; } th, td { text-align:right; padding:4px 8px 4px 0; white-space:nowrap; } th:first-child, td:first-child { text-align:left; } th { color:var(--muted); font-weight:500; font-size:12px; }
+  tr.rec td { font-weight:600; } tr.sel td { background:color-mix(in srgb, var(--acc) 14%, transparent); }
+  tbody#scan tr { cursor:pointer; }
+  .bar { display:inline-block; height:8px; border-radius:4px; background:var(--acc); vertical-align:middle; min-width:2px; }
+  .pos { color:var(--warn); } .neg { color:var(--acc); } .tiny { color:var(--good); }
+  .meta { font-size:13px; color:var(--muted); margin:0 0 8px; } .ctl { display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-bottom:8px; font-size:13px; }
+  .ctl input[type=number] { width:80px; } .ctl label { display:inline; margin:0 4px 0 0; font-weight:500; }
+  footer { margin-top:20px; font-size:13px; color:var(--muted); max-width:80ch; }
+  .legend { font-size:12px; color:var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Tuning Fit</h1>
+  <p class="lede">An equal tuning (an "EDO") splits an interval into equal steps. 12 steps per octave is the piano. Which division best matches the pure ratios you care about? Enter the ratios, and it finds the divisions that approximate them better than every smaller one, then lets you hear pure against tempered.</p>
+  <div class="presets" id="presets">Try: </div>
+  <div class="card">
+    <div class="row">
+      <div><label for="ratios">Target ratios (rising, comma separated)</label><input type="text" id="ratios" spellcheck="false" autocomplete="off" /><div class="err" id="e1"></div></div>
+      <div><label for="equave">Repeats at (equave)</label><input type="text" id="equave" spellcheck="false" autocomplete="off" /><div class="err" id="e2"></div></div>
+      <div><label for="maxn">Up to N steps</label><input type="number" id="maxn" min="1" max="400" /><div class="err" id="e3"></div></div>
+    </div>
+    <div class="ctl"><span>Judge by</span>
+      <button class="b on" id="m-rms" data-m="rms" aria-pressed="true">RMS error</button>
+      <button class="b" id="m-max" data-m="max" aria-pressed="false">worst interval</button>
+      <label><input type="checkbox" id="all" /> show every N, not only record-holders</label></div>
+  </div>
+  <div class="card"><h2>Divisions</h2><p class="meta" id="summary"></p>
+    <table><thead><tr><th>Steps</th><th>Step (cents)</th><th>RMS</th><th>Worst</th><th></th></tr></thead><tbody id="scan"></tbody></table>
+    <p class="legend">Cents: 100 cents is one piano semitone. Errors under 5 cents are shown in green (my own cut-off, not a measured threshold). Click a row to inspect it.</p></div>
+  <div class="card"><h2 id="dtitle">Detail</h2><div class="ctl"><label for="base">Base pitch (Hz)</label><input type="number" id="base" value="220" min="40" max="800" />
+    <button class="b" id="playscale">Play the scale</button></div><table><thead><tr><th>Ratio</th><th>Pure (cents)</th><th>Nearest step</th><th>Tempered (cents)</th><th>Error</th><th>Hear</th></tr></thead><tbody id="detail"></tbody></table></div>
+  <footer>The nearest step is chosen by comparing in log space; error = tempered minus pure, in cents. "Record-holder" means no smaller N has a lower score. Sound is plain sine waves from your browser's audio, each Play sounds the base with the pure ratio, then the base with the tempered one.</footer>
+</main>
+<script src="src/edo.js"></script>
+<script>
+(function () {
+  const T = window.TuningFit, $ = (id) => document.getElementById(id);
+  const PRESETS = [
+    ['Fifth only', '3/2', '2', 72], ['5-limit', '3/2, 5/4, 6/5', '2', 72], ['7-limit', '3/2, 5/4, 6/5, 7/4, 7/5, 7/6', '2', 120],
+    ['11-limit', '3/2, 5/4, 7/4, 11/8', '2', 120], ['Bohlen-Pierce (3:1)', '5/3, 7/3, 7/5', '3', 40], ['Just sevenths', '7/4, 7/6, 8/7', '2', 100]];
+  let state = { ratios: '3/2, 5/4, 6/5', equave: '2', maxn: 72, metric: 'rms', all: false, sel: 12 }, scan = [], ratios = [], equave = null, ctx = null;
+  const fmt = (x, d) => (x >= 0 ? '+' : '−') + Math.abs(x).toFixed(d == null ? 2 : d);
+  function load() { try { const h = location.hash.slice(1); if (h) { const o = JSON.parse(decodeURIComponent(h)); if (o && typeof o.ratios === 'string') state = Object.assign(state, { ratios: o.ratios, equave: String(o.equave || '2'), maxn: +o.maxn || 72, metric: o.metric === 'max' ? 'max' : 'rms', sel: +o.sel || 12 }); } } catch (e) {} }
+  function save() { try { history.replaceState(null, '', '#' + encodeURIComponent(JSON.stringify({ ratios: state.ratios, equave: state.equave, maxn: state.maxn, metric: state.metric, sel: state.sel }))); } catch (e) {} }
+  function compute() {
+    ['e1', 'e2', 'e3'].forEach((i) => ($(i).textContent = ''));
+    try { ratios = T.parseList(state.ratios); } catch (e) { $('e1').textContent = e.message; ratios = null; }
+    try { equave = T.parseRatio(state.equave); if (equave.n <= equave.d) throw new Error('The equave must be above 1 (2 is the octave).'); } catch (e) { $('e2').textContent = e.message; equave = null; }
+    if (!(state.maxn >= 1 && state.maxn <= T.MAXN)) { $('e3').textContent = 'Use 1 to ' + T.MAXN + '.'; scan = []; } 
+    else if (ratios && equave) scan = T.scan(state.maxn, ratios, equave, state.metric); else scan = [];
+    render();
+  }
+  function render() {
+    const tb = $('scan'); tb.textContent = '';
+    const rows = scan.filter((x) => state.all || x.record);
+    const worst = Math.max.apply(null, scan.map((x) => x.score).concat([1e-9]));
+    $('summary').textContent = scan.length ? (state.all ? 'Every division from 1 to ' + state.maxn + '. Bold rows are record-holders.' : 'Record-holders: each beats every smaller division on ' + (state.metric === 'rms' ? 'RMS error' : 'worst-interval error') + '.') + ' ' + scan.filter((x) => x.record).length + ' of ' + scan.length + ' are records.' : 'Fix the inputs above.';
+    rows.forEach((x) => {
+      const tr = document.createElement('tr'); tr.dataset.n = x.n; if (x.record) tr.className = 'rec'; if (x.n === state.sel) tr.classList.add('sel');
+      tr.tabIndex = 0;
+      const w = Math.max(2, Math.round(120 * Math.min(1, x.score / worst)));
+      tr.innerHTML = '<td>' + x.n + '</td><td>' + x.stepCents.toFixed(2) + '</td><td>' + x.rms.toFixed(2) + '</td><td>' + x.max.toFixed(2) + '</td><td><span class="bar" style="width:' + w + 'px"></span></td>';
+      const pick = () => { state.sel = x.n; save(); render(); }; tr.addEventListener('click', pick); tr.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+      tb.appendChild(tr);
+    });
+    const d = $('detail'); d.textContent = '';
+    if (!scan.length) { $('dtitle').textContent = 'Detail'; return; }
+    const n = Math.min(Math.max(1, state.sel), scan.length), f = scan[n - 1];
+    $('dtitle').textContent = n + ' steps per ' + equave.text + ' (' + f.stepCents.toFixed(3) + ' cents each)';
+    f.rows.forEach((r, i) => {
+      const tr = document.createElement('tr'); const cls = Math.abs(r.err) < 5 ? 'tiny' : r.err > 0 ? 'pos' : 'neg';
+      tr.innerHTML = '<td>' + r.ratio + '</td><td>' + r.just.toFixed(2) + '</td><td>' + r.step + '</td><td>' + r.tempered.toFixed(2) + '</td><td class="' + cls + '">' + fmt(r.err) + '</td><td><button class="b" data-i="' + i + '">Play</button></td>';
+      d.appendChild(tr);
+    });
+  }
+  function audio() { if (!ctx) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return null; ctx = new C(); } if (ctx.state === 'suspended') ctx.resume(); return ctx; }
+  function tone(hz, t0, dur, vol) {
+    const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sine'; o.frequency.value = hz;
+    g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(vol, t0 + 0.03); g.gain.setValueAtTime(vol, t0 + dur - 0.1); g.gain.linearRampToValueAtTime(0, t0 + dur);
+    o.connect(g); g.connect(ctx.destination); o.start(t0); o.stop(t0 + dur + 0.02);
+  }
+  function playInterval(i) {
+    if (!audio() || !scan.length) return; const base = +$('base').value || 220, f = scan[Math.min(state.sel, scan.length) - 1], r = ratios[i], t = ctx.currentTime + 0.05;
+    const pure = base * r.n / r.d, temp = T.freq(base, f.rows[i].step, f.n, equave);
+    tone(base, t, 1.6, 0.12); tone(pure, t, 1.6, 0.12);          // pure pair
+    tone(base, t + 1.8, 1.6, 0.12); tone(temp, t + 1.8, 1.6, 0.12); // tempered pair
+  }
+  function playScale() {
+    if (!audio() || !scan.length) return; const base = +$('base').value || 220, n = Math.min(state.sel, scan.length), t = ctx.currentTime + 0.05, dt = Math.min(0.4, 6 / n);
+    for (let k = 0; k <= n; k++) tone(T.freq(base, k, n, equave), t + k * dt, dt * 1.2, 0.12);
+  }
+  function init() {
+    load();
+    const pb = $('presets'); PRESETS.forEach((p) => { const b = document.createElement('button'); b.textContent = p[0]; b.addEventListener('click', () => { state.ratios = p[1]; state.equave = p[2]; state.maxn = p[3]; sync(); compute(); save(); }); pb.appendChild(b); });
+    const sync = () => { $('ratios').value = state.ratios; $('equave').value = state.equave; $('maxn').value = state.maxn; $('all').checked = state.all; ['rms', 'max'].forEach((m) => { $('m-' + m).classList.toggle('on', state.metric === m); $('m-' + m).setAttribute('aria-pressed', String(state.metric === m)); }); };
+    sync();
+    $('ratios').addEventListener('input', (e) => { state.ratios = e.target.value; compute(); save(); });
+    $('equave').addEventListener('input', (e) => { state.equave = e.target.value; compute(); save(); });
+    $('maxn').addEventListener('input', (e) => { state.maxn = +e.target.value; compute(); save(); });
+    $('all').addEventListener('change', (e) => { state.all = e.target.checked; render(); });
+    document.querySelectorAll('[data-m]').forEach((b) => b.addEventListener('click', () => { state.metric = b.dataset.m; sync(); compute(); save(); }));
+    $('detail').addEventListener('click', (e) => { const b = e.target.closest('button[data-i]'); if (b) playInterval(+b.dataset.i); });
+    $('playscale').addEventListener('click', playScale);
+    compute();
+  }
+  init();
+})();
+</script>
+</body>
+</html>

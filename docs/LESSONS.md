@@ -50,3 +50,11 @@
 - Make the random generator obey the target's grammar; it exposed two parser differences from JS in minutes.
 - Playwright: `innerText` omits CSS `::after` content, and a hash-only `goto` does not reload; add `reload()`. Add `min-width:0; overflow-x:auto` to grid cards to stop phone overflow.
 - Verify what the tool prints (counterexamples), not just the algorithm. Domains done: ... + automata/text. Scores are stuck near 3.0; next try an instrument or a generative piece, or get Use up via a tool with wider input.
+
+## 2026-11-14 (Tuning Fit)
+- Same toolchain (Node 22, Python 3.11, Playwright Chromium; no numpy). Exact big-integer comparison is a good oracle for "nearest" questions with logs; Decimal gives 60 digits for the rest.
+- Hand-written expected values were wrong three times (signs, a misremembered figure). Derive from arithmetic first; let the oracle arbitrate.
+- Inequality-only tests (rms <= max) let a wrong divisor survive; mutate numeric formulas and add value checks.
+- Stub `AudioContext` in Playwright to test what audio code requests; it is not a listening test, so keep Delight provisional.
+- Scores stay near 2.8-3.0. To move Use or Originality, the next run might pick a wide-audience tool or a generative piece rather than another exact-answer calculator.
+
