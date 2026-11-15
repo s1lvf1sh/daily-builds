@@ -58,3 +58,9 @@
 - Stub `AudioContext` in Playwright to test what audio code requests; it is not a listening test, so keep Delight provisional.
 - Scores stay near 2.8-3.0. To move Use or Originality, the next run might pick a wide-audience tool or a generative piece rather than another exact-answer calculator.
 
+
+## 2026-11-15 (Knotwork)
+- Same toolchain (Node 22, Python 3.11, Playwright Chromium via `NODE_PATH=$(npm root -g)`; no numpy). Look for a closed-form law first (here gcd(a,b) strands) as a free independent check, then add a second model that shares no structure (a bouncing point versus linked cell segments).
+- A mutation to a symmetry helper survived because the test only counted orbit size; test geometry directly.
+- Playwright: re-query elements after a re-render; use a stale-free `pg.click(selector)`.
+- A generative visual piece scored Delight 3.5~ from screenshots alone. Domains done: ... + decorative knotwork. Next: try a tool with a wider audience or a real instrument; keep Use in mind (this one is an art toy, Use 2).

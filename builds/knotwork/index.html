@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Knotwork</title>
+<style>
+  :root { color-scheme: dark; --bg:#150f2e; --fg:#ece8f7; --muted:#9d94c2; --card:#1d1740; --line:#3a3070; --accent:#f2b441; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui,sans-serif; }
+  main { max-width:980px; margin:0 auto; padding:24px 16px 40px; }
+  h1 { margin:0; font-size:28px; letter-spacing:.02em; } .lede { margin:2px 0 18px; color:var(--muted); }
+  .wrap { display:grid; grid-template-columns:minmax(0,1fr) 260px; gap:18px; align-items:start; }
+  @media (max-width:760px) { .wrap { grid-template-columns:minmax(0,1fr); } }
+  #stage { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:8px; }
+  #stage svg { display:block; width:100%; height:auto; max-height:80vh; } .hit { cursor:pointer; } .hit:hover { fill:rgba(255,255,255,.22); }
+  .panel { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+  .panel + .panel { margin-top:12px; } h2 { margin:0 0 6px; font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+  label { display:flex; align-items:center; justify-content:space-between; gap:8px; margin:4px 0; font-size:14px; }
+  input[type=range] { width:130px; } select { max-width:150px; } select, button { font:inherit; font-size:14px; color:var(--fg); background:#2a2260; border:1px solid var(--line); border-radius:6px; padding:5px 9px; }
+  button { cursor:pointer; } button:hover { border-color:var(--accent); } button.primary { background:var(--accent); color:#1d1740; border-color:var(--accent); font-weight:600; }
+  .row { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; } #status { font-size:15px; min-height:44px; } #status b { color:var(--accent); }
+  ul#list { list-style:none; margin:0; padding:0; font-size:13px; color:var(--muted); max-height:180px; overflow:auto; } #list li { display:flex; align-items:center; gap:8px; } #list i { width:12px; height:12px; border-radius:3px; display:inline-block; }
+  p.small { font-size:13px; color:var(--muted); margin:8px 0 0; } a { color:var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Knotwork</h1>
+  <p class="lede">Click the lines between squares to place walls. Strands bounce off walls and weave over and under. A knot with one strand is a single endless thread.</p>
+  <div class="wrap">
+    <div id="stage"></div>
+    <div>
+      <div class="panel"><div id="status" aria-live="polite"></div><ul id="list"></ul></div>
+      <div class="panel"><h2>Grid</h2>
+        <label>Width <input id="w" type="range" min="2" max="16" value="7" /><output id="wo">7</output></label>
+        <label>Height <input id="h" type="range" min="2" max="16" value="5" /><output id="ho">5</output></label>
+        <label>Symmetry <select id="sym"><option value="none">None</option><option value="lr">Mirror left-right</option><option value="ud">Mirror up-down</option><option value="both">Both mirrors</option><option value="rot4">Four-fold turn (square)</option></select></label>
+        <div class="row"><button id="clear">Clear walls</button><button id="rand">Random walls</button><button id="solve" class="primary">Make one strand</button></div>
+      </div>
+      <div class="panel"><h2>Keep it</h2><div class="row"><button id="svg">Download SVG</button><button id="link">Copy link</button></div><p class="small" id="msg"></p></div>
+    </div>
+  </div>
+</main>
+<script src="src/knot.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id); let g, sym = 'none', seed = 1, A;
+  const gcd = (a, b) => (b ? gcd(b, a % b) : a);
+  function draw(note) {
+    A = Knot.analyze(g); $('stage').innerHTML = Knot.renderSVG(g, A, { hit: true });
+    const n = A.count; $('status').innerHTML = (n === 1 ? '<b>One strand</b>: a single endless thread through all ' + 4 * g.W * g.H + ' segments.' : '<b>' + n + ' strands</b>.') + (note ? ' ' + note : '');
+    $('list').innerHTML = A.strands.map((s) => `<li><i style="background:${Knot.PALETTE[s.id % Knot.PALETTE.length]}"></i>${s.segs.length} segments, ${s.over.length} crossings</li>`).join('');
+    $('wo').textContent = g.W; $('ho').textContent = g.H; $('w').value = g.W; $('h').value = g.H; $('sym').value = sym;
+    try { history.replaceState(null, '', '#' + Knot.encode(g, sym)); } catch (e) {}
+  }
+  function fresh(w, h) { g = Knot.createGrid(w, h); }
+  $('stage').addEventListener('click', (ev) => { const r = ev.target.closest('.hit'); if (!r) return; Knot.toggle(g, { t: r.dataset.t, x: +r.dataset.x, y: +r.dataset.y }, sym); draw(); });
+  function resize() { const w = +$('w').value, h = +$('h').value; const old = g; fresh(w, h); Knot.interiorEdges(old).forEach((e) => { if (e.x < w && e.y < h) { try { if (Knot.getWall(old, e.t, e.x, e.y)) Knot.setWall(g, e.t, e.x, e.y, true); } catch (x) {} } }); draw(); }
+  $('w').oninput = $('h').oninput = resize;
+  $('sym').onchange = () => { sym = $('sym').value; if (sym === 'rot4' && g.W !== g.H) { $('status').textContent = 'Four-fold turn needs a square grid; making it square.'; const m = Math.min(g.W, g.H); fresh(m, m); } draw(); };
+  $('clear').onclick = () => { Knot.clear(g); draw(); };
+  $('rand').onclick = () => { Knot.shuffle(g, sym, ++seed * 7919 + Date.now() % 1000, 0.25); draw(); };
+  $('solve').onclick = () => { const r = Knot.solve(g, sym, ++seed * 104729 + Date.now() % 1000); draw(r.found ? '' : 'No single strand found with this symmetry; showing the best try (' + r.count + ').'); };
+  $('svg').onclick = () => { const b = new Blob([Knot.renderSVG(g, A)], { type: 'image/svg+xml' }), a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'knotwork.svg'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); };
+  $('link').onclick = async () => { try { await navigator.clipboard.writeText(location.href); $('msg').textContent = 'Link copied.'; } catch (e) { $('msg').textContent = 'Copy the address bar: it already holds this knot.'; } };
+  const d = Knot.decode(location.hash.slice(1)); if (d) { g = d.g; sym = d.sym; } else { fresh(7, 5); Knot.shuffle(g, 'none', 4, 0.2); }
+  draw();
+</script>
+</body>
+</html>

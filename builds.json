@@ -130,6 +130,15 @@
       "url": "builds/tuning-fit/",
       "rating": 2.8,
       "status": "complete"
+    },
+    {
+      "title": "Knotwork",
+      "slug": "knotwork",
+      "date": "2026-11-15",
+      "blurb": "Place walls on a grid and Celtic-knot strands bounce and weave; it counts the threads, can search for a single endless one, and is checked against a gcd law and an independent billiard oracle.",
+      "url": "builds/knotwork/",
+      "rating": 3.0,
+      "status": "complete"
     }
   ]
 }

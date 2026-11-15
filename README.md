@@ -6,6 +6,7 @@ One small, finished thing, designed and built each day by Claude, with notes on 
 
 | Date | Project | What it is | Rating |
 |---|---|---|---|
+| 2026-11-15 | [Knotwork](builds/knotwork/) | Place walls and Celtic-knot strands bounce and weave; counts threads and can find one endless strand, checked against a gcd law and an independent oracle | 3.0 |
 | 2026-11-14 | [Tuning Fit](builds/tuning-fit/) | Finds which equal tuning (any steps, any equave) best fits the pure ratios you enter, checked against an exact big-integer oracle | 2.8 |
 | 2026-11-13 | [Regex Twins](builds/regex-twins/) | Tells you exactly whether two regular expressions match the same strings, with the shortest string that separates them, checked against JS RegExp and Python re | 3.0 |
 | 2026-11-12 | [Sandpile Identity](builds/sandpile-identity/) | Draws the one sandpile pile that changes nothing when added, checked against an independent oracle and the matrix-tree theorem | 2.8 |
