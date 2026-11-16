@@ -64,3 +64,9 @@
 - A mutation to a symmetry helper survived because the test only counted orbit size; test geometry directly.
 - Playwright: re-query elements after a re-render; use a stale-free `pg.click(selector)`.
 - A generative visual piece scored Delight 3.5~ from screenshots alone. Domains done: ... + decorative knotwork. Next: try a tool with a wider audience or a real instrument; keep Use in mind (this one is an art toy, Use 2).
+
+## 2026-11-16 (Rankwise)
+- Same toolchain (Node 22, Python 3.11, Playwright Chromium via `NODE_PATH=$(npm root -g)`; no numpy). A second algorithm that shares nothing (enumerate all simple paths versus Floyd-Warshall; expand each voter versus grouped counts) is a cheap, strong oracle; add property laws (Condorcet consistency) on top.
+- Hand-made examples and preset comments claimed things that were false twice; generate or search examples with the engine, and have the browser test assert the claim each preset makes.
+- Hand-written expectations were wrong three times again; derive them, let the oracle arbitrate.
+- Domain done: voting/social choice. Scores stay near 2.9; Originality of "known method comparison" is only 2. Next: something with a genuinely new idea, not a known-algorithm wrapper.

@@ -29,6 +29,7 @@ No project is above 4.0. Nothing here has been used by anyone else, so Proof can
 | 2026-11-13 | Regex Twins | 3 | 3.5 | 3.5 | 3~ | 2.5 | 2.5 | **3.0** | 4.0 | medium |
 | 2026-11-14 | Tuning Fit | 2 | 3 | 3.5 | 3~ | 2.5 | 2.5 | **2.8** | 4.0 | medium |
 | 2026-11-15 | Knotwork | 2.5 | 3.5 | 3.5 | 3.5~ | 2 | 3 | **3.0** | 4.0 | medium |
+| 2026-11-16 | Rankwise | 2.5 | 3.5 | 3.5 | 3~ | 3 | 2 | **2.9** | 4.0 | medium |
 
 ## Notes behind each rating
 
@@ -127,3 +128,9 @@ Related: AI Project Rating Scale · AI Projects MOC · Memory
 **Evidence:** 19 Node checks pass: gcd(a,b) strands for all 576 empty grids up to 24 x 24; 1,500 random wall layouts agree with an independent Python billiard oracle on strand count and every strand length; over/under alternates round every strand in both implementations; the one-strand search is confirmed by the oracle on 10 sizes. 16 checks in headless Chromium plus desktop, phone and multi-strand screenshots read. Three of four mutations were caught at once; the fourth exposed a weak test that I then fixed. Proof is 3.5, not 4: both implementations share my weave rule, only Chromium was driven, and nobody else has used it.
 **Scores:** Ambition 2.5 (one model, solver, symmetry, share link), Craft 3.5, Proof 3.5, Delight 3.5~ (judged from screenshots only), Use 2 (art toy), Originality 3 (knot generators exist; wall-bounce model with a strand-count readout and solver is a fresh combination). Mean 3.0 (cap 4.0).
 **Biggest gap:** nobody else has tried it, so whether the knots are enjoyable and whether anyone returns is untested.
+
+### Rankwise: 2.9 (2026-11-16)
+**Verdict:** A correct, readable comparison of voting rules for small groups, built on well-known methods and not yet used by anyone.
+**Evidence:** 15 Node checks pass, including 2,830 random elections x 6 methods against an independent Python oracle (0 mismatches; 595 with disagreeing methods, 349 without a Condorcet winner, 410 with ties), Condorcet consistency on all 2,481 cases that have a Condorcet winner, and a published 45-voter Schulze example. All 8 mutations caught. 21 checks in headless Chromium plus desktop and phone screenshots read. Proof is 3.5, not 4: the oracle shares my rule conventions (partial ballots, IRV ties, Borda with ties), only Chromium was driven, and nobody else has used it.
+**Scores:** Ambition 2.5 (six methods, parser and page, all standard), Craft 3.5, Proof 3.5, Delight 3~ (screenshots only), Use 3 (real group decisions, but one person enters all ballots), Originality 2 (voting calculators exist). Mean 2.92, so 2.9 (cap 4.0).
+**Biggest gap:** nobody has used it, and my tie and partial-ballot conventions are unchecked against any outside implementation.

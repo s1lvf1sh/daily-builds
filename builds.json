@@ -139,6 +139,15 @@
       "url": "builds/knotwork/",
       "rating": 3.0,
       "status": "complete"
+    },
+    {
+      "title": "Rankwise",
+      "slug": "rankwise",
+      "date": "2026-11-16",
+      "blurb": "Enter how a group ranks its options and see who wins under six voting rules, where and why they disagree, with a head-to-head table; checked against an independent brute-force oracle.",
+      "url": "builds/rankwise/",
+      "rating": 2.9,
+      "status": "complete"
     }
   ]
 }

@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Rankwise</title>
+<style>
+  :root { color-scheme: light dark; --bg:#f6f4ef; --fg:#26221c; --muted:#6f685c; --card:#fffdf8; --line:#ddd6c8; --accent:#2a5fa8; --win:#1d6b3a; --winbg:#e3f3e8; --warn:#9a3412; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#16181d; --fg:#e3e0d8; --muted:#9a9488; --card:#1d2027; --line:#2f333c; --accent:#7cb4ff; --win:#7fd9a0; --winbg:#1c3326; --warn:#f0a070; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui,sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { margin:0; font-size:28px; } .lede { margin:2px 0 18px; color:var(--muted); }
+  h2 { font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:26px 0 8px; }
+  .grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.3fr); gap:16px; }
+  @media (max-width:760px) { .grid { grid-template-columns:minmax(0,1fr); } }
+  textarea { width:100%; height:230px; font:14px/1.5 ui-monospace,monospace; background:var(--card); color:var(--fg); border:1px solid var(--line); border-radius:8px; padding:10px; resize:vertical; }
+  .row { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0; }
+  button { font:inherit; font-size:14px; padding:5px 10px; border:1px solid var(--line); border-radius:6px; background:var(--card); color:var(--fg); cursor:pointer; }
+  button:hover { border-color:var(--accent); } button:focus-visible, textarea:focus-visible { outline:2px solid var(--accent); }
+  .err { color:var(--warn); font-size:14px; margin:6px 0; } .err:empty { display:none; }
+  .verdict { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px 14px; margin-bottom:12px; }
+  .verdict b { font-size:18px; }
+  .methods { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:10px; }
+  .m { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:10px 12px; min-width:0; }
+  .m h3 { margin:0 0 2px; font-size:15px; } .m .why { color:var(--muted); font-size:12.5px; margin-bottom:6px; }
+  .bar { display:grid; grid-template-columns:90px 1fr 46px; align-items:center; gap:6px; font-size:13.5px; margin:2px 0; }
+  .bar .n { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .bar .t { background:var(--line); border-radius:3px; height:10px; } .bar .t i { display:block; height:100%; background:var(--accent); border-radius:3px; opacity:.55; }
+  .bar.w .n { font-weight:700; color:var(--win); } .bar.w .t i { background:var(--win); opacity:1; } .bar .v { text-align:right; font-variant-numeric:tabular-nums; color:var(--muted); }
+  .tag { display:inline-block; font-size:12px; padding:0 6px; border-radius:10px; background:var(--winbg); color:var(--win); margin-left:4px; }
+  .scroll { overflow-x:auto; } table { border-collapse:collapse; font-size:14px; } th,td { border:1px solid var(--line); padding:3px 8px; text-align:right; font-variant-numeric:tabular-nums; }
+  th { background:var(--card); font-weight:600; } td.win { background:var(--winbg); color:var(--win); font-weight:700; } td.self { color:var(--muted); background:var(--card); }
+  .rounds { font-size:14px; } .rounds div { margin:2px 0; } small, .note { color:var(--muted); font-size:13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Rankwise</h1>
+  <p class="lede">Put in how a group ranks its options. See who wins under six different voting rules, and why the rules disagree.</p>
+  <div class="grid">
+    <section>
+      <h2>Ballots</h2>
+      <textarea id="in" aria-label="Ballots, one group per line" spellcheck="false"></textarea>
+      <div class="err" id="err" role="alert"></div>
+      <div class="row" id="presets"></div>
+      <div class="row"><button id="share">Copy share link</button><button id="clear">Clear</button></div>
+      <p class="note">One line per group: <code>3: Pizza &gt; Tacos &gt; Sushi</code> means 3 people ranked those in that order. Anything left off a ballot is tied for last. <code>#</code> starts a comment.</p>
+    </section>
+    <section>
+      <h2>Verdict</h2>
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+      <div class="methods" id="methods"></div>
+    </section>
+  </div>
+  <h2>Head to head</h2>
+  <p class="note">Each cell: how many voters rank the row option above the column option. Green means the row option wins that pairing.</p>
+  <div class="scroll" id="pw"></div>
+  <h2>Instant-runoff rounds</h2>
+  <div class="rounds" id="rounds"></div>
+  <h2>The rules in one line each</h2>
+  <ul class="note">
+    <li><b>Plurality:</b> most first choices.</li>
+    <li><b>Instant runoff:</b> drop the option with fewest first choices (all that tie), pass those votes down, repeat until one has over half. Voters whose listed options are all gone stop counting.</li>
+    <li><b>Borda:</b> each ballot gives an option 1 point per option it beats, half a point per tie.</li>
+    <li><b>Copeland:</b> 1 point per head-to-head win, half per tie.</li>
+    <li><b>Minimax:</b> the option whose worst head-to-head margin is least bad.</li>
+    <li><b>Schulze:</b> the option with the strongest chain of head-to-head wins over every rival. Ties are reported as ties, never broken by chance.</li>
+  </ul>
+</main>
+<script src="src/vote.js"></script>
+<script>
+(() => {
+  const PRESETS = {
+    'Lunch split': '# Plurality picks Pizza; most other rules pick Tacos\n5: Pizza > Tacos > Sushi\n4: Tacos > Sushi > Pizza\n3: Sushi > Tacos > Pizza',
+    'Circular': '# Rock-paper-scissors: no option beats all others\n1: Red > Green > Blue\n1: Green > Blue > Red\n1: Blue > Red > Green',
+    'Squeeze': '# The compromise option Mid is squeezed out of the runoff\n4: Left > Mid > Right\n3: Right > Mid > Left\n2: Mid > Left > Right\n1: Mid > Right > Left\n1: Left > Right > Mid',
+    'Wiki 45': '5: A > C > B > E > D\n5: A > D > E > C > B\n8: B > E > D > A > C\n3: C > A > B > E > D\n7: C > A > E > B > D\n2: C > B > A > D > E\n7: D > C > E > B > A\n8: E > B > A > D > C',
+  };
+  const $ = (id) => document.getElementById(id), V = window.Vote;
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const list = (a) => a.map((x) => `<b>${esc(x)}</b>`).join(' &amp; ');
+  const WHY = { plurality: 'Counts only first choices.', irv: 'Drops the weakest, passes votes down.', borda: 'Rewards broad support.', copeland: 'Counts head-to-head wins.', minimax: 'Least-bad worst defeat.', schulze: 'Strongest chain of wins.' };
+  let t;
+  function render() {
+    const text = $('in').value; const R = V.analyze(text);
+    try { history.replaceState(null, '', '#' + encodeURIComponent(text)); } catch (e) {}
+    $('err').innerHTML = (R.errors || []).map(esc).join('<br>');
+    if (R.errors.length) { $('verdict').textContent = 'Fix the ballots to see results.'; ['methods', 'pw', 'rounds'].forEach((i) => ($(i).innerHTML = '')); return; }
+    const C = R.candidates, nw = R.groups.length;
+    $('verdict').innerHTML = `<div>${R.voters} voter${R.voters === 1 ? '' : 's'}, ${C.length} options. ` + (nw === 1 ? `All six rules agree: ${list(R.groups[0].winners)}.` : `<b>The rules disagree</b>: ${R.groups.map((g) => `${list(g.winners)} under ${g.methods.map((m) => V.NAMES[m]).join(', ')}`).join('; ')}.`) + '</div>' +
+      `<div class="note">${R.condorcet ? `${esc(R.condorcet)} beats every other option head to head (a Condorcet winner).` + (R.groups.length && !R.groups.every((g) => g.winners.includes(R.condorcet) && g.winners.length === 1) ? ' Some rules did not pick it.' : '') : 'No option beats all the others head to head, so there is no Condorcet winner.'}</div>`;
+    $('methods').innerHTML = V.METHODS.map((m) => {
+      const r = R.results[m], max = Math.max(...r.scores.map(Math.abs), 1);
+      const order = C.map((c, i) => i).sort((a, b) => r.scores[b] - r.scores[a]);
+      return `<div class="m"><h3>${V.NAMES[m]}${r.winners.length > 1 ? ' <span class="tag">tie</span>' : ''}</h3><div class="why">${WHY[m]} ${r.winners.length > 1 ? 'Tied: ' + list(r.winners) + '.' : 'Winner: ' + list(r.winners) + '.'}</div>` +
+        order.map((i) => { const w = r.winners.includes(C[i]); const s = r.scores[i]; return `<div class="bar${w ? ' w' : ''}"><span class="n" title="${esc(C[i])}">${esc(C[i])}</span><span class="t"><i style="width:${Math.max(0, s) / max * 100}%"></i></span><span class="v">${s}</span></div>`; }).join('') + `<small>${r.unit}</small></div>`;
+    }).join('');
+    $('pw').innerHTML = '<table><tr><th></th>' + C.map((c) => `<th>${esc(c)}</th>`).join('') + '</tr>' + C.map((a, i) => `<tr><th>${esc(a)}</th>` + C.map((b, j) => i === j ? '<td class="self">–</td>' : `<td${R.pairwise[i][j] > R.pairwise[j][i] ? ' class="win"' : ''}>${R.pairwise[i][j]}</td>`).join('') + '</tr>').join('') + '</table>';
+    $('rounds').innerHTML = R.results.irv.rounds.map((rd, k) => `<div><b>Round ${k + 1}</b> (${rd.active} counted): ` + rd.alive.map((c, i) => `${esc(c)} ${rd.tally[i]}`).join(', ') + (rd.eliminated.length ? ` &rarr; out: ${rd.eliminated.map(esc).join(', ')}` : ' &rarr; done') + '</div>').join('');
+  }
+  $('presets').innerHTML = Object.keys(PRESETS).map((k) => `<button data-p="${esc(k)}">${esc(k)}</button>`).join('');
+  $('presets').addEventListener('click', (e) => { const k = e.target.dataset.p; if (k) { $('in').value = PRESETS[k]; render(); } });
+  $('in').addEventListener('input', () => { clearTimeout(t); t = setTimeout(render, 120); });
+  $('clear').onclick = () => { $('in').value = ''; render(); $('in').focus(); };
+  $('share').onclick = async () => { try { await navigator.clipboard.writeText(location.href); $('share').textContent = 'Copied'; } catch (e) { $('share').textContent = 'Copy the address bar'; } setTimeout(() => ($('share').textContent = 'Copy share link'), 1500); };
+  let init = PRESETS['Lunch split']; try { if (location.hash.length > 1) init = decodeURIComponent(location.hash.slice(1)); } catch (e) {}
+  $('in').value = init; render();
+})();
+</script>
+</body>
+</html>
