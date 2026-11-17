@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Strip Folds</title>
+<style>
+  :root { color-scheme: light dark; --bg:#f6f4ef; --fg:#26221c; --muted:#6f685c; --card:#fffdf8; --line:#ddd6c8; --accent:#2a5fa8; --warn:#9a3412; --c0:#c2410c; --c1:#2a5fa8; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#16181d; --fg:#e3e0d8; --muted:#9a9488; --card:#1d2027; --line:#2f333c; --accent:#7cb4ff; --warn:#f0a070; --c0:#f59e6b; --c1:#7cb4ff; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui,sans-serif; }
+  main { max-width:980px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { margin:0; font-size:28px; } .lede { margin:2px 0 18px; color:var(--muted); }
+  h2 { font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:22px 0 8px; }
+  .grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.2fr); gap:18px; }
+  @media (max-width:760px) { .grid { grid-template-columns:minmax(0,1fr); } }
+  label { display:block; font-size:14px; color:var(--muted); margin:8px 0 2px; }
+  input[type=text] { width:100%; font:15px ui-monospace,monospace; background:var(--card); color:var(--fg); border:1px solid var(--line); border-radius:6px; padding:7px 9px; }
+  input:focus-visible, button:focus-visible { outline:2px solid var(--accent); }
+  .row { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0; align-items:center; }
+  button { font:inherit; font-size:14px; padding:5px 10px; border:1px solid var(--line); border-radius:6px; background:var(--card); color:var(--fg); cursor:pointer; }
+  button:hover:not(:disabled) { border-color:var(--accent); } button:disabled { opacity:.45; cursor:default; }
+  .err { color:var(--warn); font-size:14px; margin:6px 0; min-height:0; } .err:empty { display:none; }
+  .verdict { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:10px 14px; margin-bottom:10px; }
+  .verdict b { font-size:18px; } .note, small { color:var(--muted); font-size:13px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:8px; min-width:0; }
+  svg { display:block; width:100%; height:auto; } svg text { fill:var(--muted); font:11px system-ui,sans-serif; }
+  .stack-wrap { max-height:520px; overflow:auto; }
+  .seg { stroke-width:5; stroke-linecap:butt; } .crease { fill:none; stroke-width:2; stroke:var(--fg); opacity:.75; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Strip Folds</h1>
+  <p class="lede">Write mountain and valley folds along a strip of paper. See whether it folds flat, how many ways, and what the strip looks like when unfolded to right angles.</p>
+  <div class="grid">
+    <section>
+      <h2>The strip</h2>
+      <label for="creases">Creases, left to right (M = mountain, V = valley)</label>
+      <input type="text" id="creases" spellcheck="false" autocomplete="off" />
+      <label for="lengths">Segment lengths (whole numbers; blank means all 1)</label>
+      <input type="text" id="lengths" spellcheck="false" autocomplete="off" placeholder="e.g. 1 2 1 1" />
+      <div class="err" id="err" role="alert"></div>
+      <div class="row" id="presets"></div>
+      <div class="row"><button id="rand">Random strip</button><button id="share">Copy share link</button></div>
+      <p class="note">Segments are the pieces between creases, so n creases make n+1 segments. Every crease is folded flat (180°). Mountain and valley are as seen from the top face of the strip.</p>
+      <h2>Unfolded to 90°</h2>
+      <div class="card"><svg id="curve" viewBox="0 0 300 300" role="img" aria-label="The strip with every crease opened to a right angle"></svg></div>
+      <p class="note">V turns left, M turns right. Fold a strip in half again and again, open it, and this shape appears.</p>
+    </section>
+    <section>
+      <h2>Verdict</h2>
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+      <div class="row"><button id="prev">&larr; Previous</button><span id="which" class="note"></span><button id="next">Next &rarr;</button></div>
+      <div class="card stack-wrap"><svg id="stack" viewBox="0 0 400 200" role="img" aria-label="Side view of the folded stack"></svg></div>
+      <p class="note">Side view of the flat-folded strip. Each bar is one segment, bottom layer at the bottom; arcs are the creases. Orange to blue runs from the first segment to the last.</p>
+    </section>
+  </div>
+</main>
+<script src="src/fold.js"></script>
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id), NS = 'http://www.w3.org/2000/svg';
+  const PRESETS = [
+    ['Accordion', 'VMVMVMVM', ''],
+    ['Dragon, 4 folds', Fold.dragon(4), ''],
+    ['Roll up', 'VVVVVV', ''],
+    ['Will not fold', 'VVV', '2 3 1 2'],
+    ['Odd lengths', 'VMMV', '2 1 3 1 2'],
+  ];
+  let found = null, idx = 0, cur = null;
+  const el = (name, attrs, parent) => { const e = document.createElementNS(NS, name); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+  const colour = (i, m) => { const t = m <= 1 ? 0 : i / (m - 1); const a = getComputedStyle(document.documentElement); return `color-mix(in srgb, ${a.getPropertyValue('--c1').trim()} ${Math.round(t * 100)}%, ${a.getPropertyValue('--c0').trim()})`; };
+
+  function drawStack() {
+    const svg = $('stack'); svg.replaceChildren();
+    if (!cur || !found || !found.orders.length) { svg.setAttribute('viewBox', '0 0 400 40'); if (cur) el('text', { x: 200, y: 24, 'text-anchor': 'middle' }, svg).textContent = 'No flat folding to draw.'; return; }
+    const { creases, lengths } = cur, m = lengths.length, pos = found.orders[idx];
+    const xs = Fold.vertexXs(lengths), lo = Math.min(...xs), hi = Math.max(...xs);
+    const U = Math.min(60, 320 / Math.max(1, hi - lo)), gap = Math.min(22, 440 / m), padX = 40, W = (hi - lo) * U + 2 * padX, H = (m - 1) * gap + 40;
+    svg.setAttribute('viewBox', `0 0 ${Math.max(W, 120)} ${H}`);
+    const X = (v) => padX + (v - lo) * U, Y = (p) => H - 20 - p * gap;
+    for (let k = 0; k < m - 1; k++) {
+      const a = Y(pos[k]), b = Y(pos[k + 1]), x = X(xs[k + 1]), s = k % 2 === 0 ? 1 : -1, r = Math.min(26, 8 + Math.abs(a - b) * 0.18);
+      el('path', { class: 'crease', d: `M${x},${a} C${x + s * r * 1.4},${a} ${x + s * r * 1.4},${b} ${x},${b}` }, svg);
+    }
+    for (let i = 0; i < m; i++) {
+      const a = X(xs[i]), b = X(xs[i + 1]), y = Y(pos[i]);
+      const l = el('line', { class: 'seg', x1: a, x2: b, y1: y, y2: y, stroke: colour(i, m) }, svg);
+      l.appendChild(Object.assign(document.createElementNS(NS, 'title'), { textContent: `segment ${i + 1}, length ${lengths[i]}, layer ${pos[i] + 1} of ${m}` }));
+    }
+  }
+
+  function drawCurve() {
+    const svg = $('curve'); svg.replaceChildren();
+    if (!cur) return;
+    const pts = Fold.curve(cur.creases, cur.lengths);
+    const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys), w = Math.max(1, x1 - x0), h = Math.max(1, y1 - y0);
+    const sc = 270 / Math.max(w, h), ox = (300 - w * sc) / 2, oy = (300 - h * sc) / 2;
+    const P = (p) => [ox + (p[0] - x0) * sc, oy + (y1 - p[1]) * sc];
+    for (let i = 0; i + 1 < pts.length; i++) {
+      const [a, b] = [P(pts[i]), P(pts[i + 1])];
+      el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: colour(i, pts.length - 1), 'stroke-width': Math.min(3, Math.max(1, sc * 0.5)), 'stroke-linecap': 'round' }, svg);
+    }
+  }
+
+  function update(fromUser) {
+    const cr = Fold.parseCreases($('creases').value), err = $('err');
+    err.textContent = ''; cur = null; found = null;
+    if (cr.error) err.textContent = cr.error;
+    else {
+      const ln = Fold.parseLengths($('lengths').value, cr.creases.length + 1);
+      if (ln.error) err.textContent = ln.error; else cur = { creases: cr.creases, lengths: ln.lengths };
+    }
+    const v = $('verdict');
+    if (!cur) { v.innerHTML = '<b>Fix the input above.</b>'; $('which').textContent = ''; $('prev').disabled = $('next').disabled = true; drawStack(); drawCurve(); return; }
+    found = Fold.solve(cur.creases, cur.lengths, { keep: 200 }); idx = 0;
+    const n = found.count, more = found.complete ? '' : ' or more';
+    if (n === 0) v.innerHTML = '<b>It will not fold flat.</b><br><small>No stacking order of the segments keeps every fold from cutting through paper. Try other lengths or flip a crease.</small>';
+    else v.innerHTML = `<b>Folds flat, ${n.toLocaleString()}${more} way${n === 1 && found.complete ? '' : 's'}.</b><br><small>${cur.lengths.length} segments, ${cur.creases.length} creases. Each way is a different stacking order of the segments${found.complete ? '' : ' (search stopped early; the count is a lower bound)'}.</small>`;
+    nav(); drawCurve();
+    if (fromUser && cur) { try { history.replaceState(null, '', '#' + encodeURIComponent(cur.creases) + ($('lengths').value.trim() ? '/' + cur.lengths.join(',') : '')); } catch (e) {} }
+  }
+  function nav() {
+    const k = found ? found.orders.length : 0;
+    $('prev').disabled = idx <= 0; $('next').disabled = idx >= k - 1;
+    $('which').textContent = k ? `Folding ${idx + 1} of ${found.count.toLocaleString()}${found.complete ? '' : '+'}${k < found.count ? ' (first ' + k + ' shown)' : ''}` : '';
+    drawStack();
+  }
+  $('prev').onclick = () => { idx = Math.max(0, idx - 1); nav(); };
+  $('next').onclick = () => { idx = Math.min(found.orders.length - 1, idx + 1); nav(); };
+  $('creases').addEventListener('input', () => update(true)); $('lengths').addEventListener('input', () => update(true));
+  PRESETS.forEach(([name, c, l]) => { const b = document.createElement('button'); b.textContent = name; b.onclick = () => { $('creases').value = c; $('lengths').value = l; update(true); }; $('presets').appendChild(b); });
+  $('rand').onclick = () => { const n = 6 + Math.floor(Math.random() * 8); $('creases').value = Array.from({ length: n }, () => (Math.random() < 0.5 ? 'M' : 'V')).join(''); $('lengths').value = ''; update(true); };
+  $('share').onclick = async () => { try { await navigator.clipboard.writeText(location.href); $('share').textContent = 'Copied'; setTimeout(() => ($('share').textContent = 'Copy share link'), 1200); } catch (e) { $('share').textContent = 'Copy from the address bar'; } };
+
+  const h = decodeURIComponent(location.hash.slice(1)).split('/');
+  $('creases').value = h[0] || Fold.dragon(3); $('lengths').value = (h[1] || '').replace(/,/g, ' ');
+  update(false);
+})();
+</script>
+</body>
+</html>

@@ -148,6 +148,15 @@
       "url": "builds/rankwise/",
       "rating": 2.9,
       "status": "complete"
+    },
+    {
+      "title": "Strip Folds",
+      "slug": "strip-folds",
+      "date": "2026-11-17",
+      "blurb": "Write mountain and valley folds on a paper strip and see whether it folds flat, in how many ways, and its shape unfolded to right angles; checked against the published stamp-folding numbers and a brute-force oracle.",
+      "url": "builds/strip-folds/",
+      "rating": 3.0,
+      "status": "complete"
     }
   ]
 }

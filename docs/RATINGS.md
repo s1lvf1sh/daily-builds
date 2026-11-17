@@ -30,6 +30,7 @@ No project is above 4.0. Nothing here has been used by anyone else, so Proof can
 | 2026-11-14 | Tuning Fit | 2 | 3 | 3.5 | 3~ | 2.5 | 2.5 | **2.8** | 4.0 | medium |
 | 2026-11-15 | Knotwork | 2.5 | 3.5 | 3.5 | 3.5~ | 2 | 3 | **3.0** | 4.0 | medium |
 | 2026-11-16 | Rankwise | 2.5 | 3.5 | 3.5 | 3~ | 3 | 2 | **2.9** | 4.0 | medium |
+| 2026-11-17 | Strip Folds | 2.5 | 3.5 | 3.5 | 3~ | 2.5 | 3 | **3.0** | 4.0 | medium |
 
 ## Notes behind each rating
 
@@ -134,3 +135,9 @@ Related: AI Project Rating Scale · AI Projects MOC · Memory
 **Evidence:** 15 Node checks pass, including 2,830 random elections x 6 methods against an independent Python oracle (0 mismatches; 595 with disagreeing methods, 349 without a Condorcet winner, 410 with ties), Condorcet consistency on all 2,481 cases that have a Condorcet winner, and a published 45-voter Schulze example. All 8 mutations caught. 21 checks in headless Chromium plus desktop and phone screenshots read. Proof is 3.5, not 4: the oracle shares my rule conventions (partial ballots, IRV ties, Borda with ties), only Chromium was driven, and nobody else has used it.
 **Scores:** Ambition 2.5 (six methods, parser and page, all standard), Craft 3.5, Proof 3.5, Delight 3~ (screenshots only), Use 3 (real group decisions, but one person enters all ballots), Originality 2 (voting calculators exist). Mean 2.92, so 2.9 (cap 4.0).
 **Biggest gap:** nobody has used it, and my tie and partial-ballot conventions are unchecked against any outside implementation.
+
+### Strip Folds: 3.0 (2026-11-17)
+**Verdict:** A correct, small tool for a niche question (does this crease pattern fold flat), with a nice link to the dragon curve and no users yet.
+**Evidence:** 37 Node checks pass: summed counts match the published stamp-folding numbers (OEIS A000136) for 1 to 10 segments, and 387 cases (all unit strips to 7 segments plus 260 random strips with unequal lengths) match an independent Python permutation brute force with 0 mismatches (67 unfoldable, 198 with several foldings). The oracle exposed a real bug in my first engine (22 mismatches), since fixed. 6 of 6 mutations caught. 21 checks in headless Chromium plus a desktop screenshot read. Proof is 3.5, not 4: the oracle and engine share my physical model of what counts as a fold cutting through paper, the published numbers cover only unit lengths, only Chromium was driven, and nobody else has used it.
+**Scores:** Ambition 2.5 (search, geometry rules, oracle, curve, page), Craft 3.5, Proof 3.5, Delight 3~ (screenshot only; no animation), Use 2.5 (niche: paper folders and teachers), Originality 3 (stamp folding is known; an interactive checker with unequal lengths and the unfolded curve is a fresh combination). Mean 3.0 (cap 4.0).
+**Biggest gap:** nobody has used it, and the fold model is unchecked against real paper or an outside implementation for unequal lengths.

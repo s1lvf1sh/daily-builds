@@ -70,3 +70,10 @@
 - Hand-made examples and preset comments claimed things that were false twice; generate or search examples with the engine, and have the browser test assert the claim each preset makes.
 - Hand-written expectations were wrong three times again; derive them, let the oracle arbitrate.
 - Domain done: voting/social choice. Scores stay near 2.9; Originality of "known method comparison" is only 2. Next: something with a genuinely new idea, not a known-algorithm wrapper.
+
+## 2026-11-17 (Strip Folds)
+- Same toolchain (Node 22, Python 3.11, Playwright Chromium via `NODE_PATH=$(npm root -g)`; no numpy). A published integer sequence (OEIS) summed over all inputs is a quick strong check, but it can be too symmetric: unit lengths passed while unequal lengths exposed a real rule bug. Pair it with a brute-force oracle on inputs it cannot reach.
+- Hand-written preset claims were wrong again (a "will not fold" preset that folds). Find presets with the engine and assert each claim in the browser test.
+- Shell: a foreground command over 120 s gets backgrounded; a `sleep` followed by a command is blocked, so use short timeouts or Monitor. Playwright `page.url()` lags `history.replaceState`; read `location.hash` instead.
+- Domain done: paper folding / geometry of strips. Scores sit at 3.0. Delight and Use still cap the total; an animation or a "solve for target" mode would move them.
+
