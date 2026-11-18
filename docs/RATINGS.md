@@ -31,6 +31,7 @@ No project is above 4.0. Nothing here has been used by anyone else, so Proof can
 | 2026-11-15 | Knotwork | 2.5 | 3.5 | 3.5 | 3.5~ | 2 | 3 | **3.0** | 4.0 | medium |
 | 2026-11-16 | Rankwise | 2.5 | 3.5 | 3.5 | 3~ | 3 | 2 | **2.9** | 4.0 | medium |
 | 2026-11-17 | Strip Folds | 2.5 | 3.5 | 3.5 | 3~ | 2.5 | 3 | **3.0** | 4.0 | medium |
+| 2026-11-18 | Fair Rooms | 3 | 3.5 | 3.5 | 3~ | 3 | 2.5 | **3.1** | 4.0 | medium |
 
 ## Notes behind each rating
 
@@ -141,3 +142,10 @@ Related: AI Project Rating Scale · AI Projects MOC · Memory
 **Evidence:** 37 Node checks pass: summed counts match the published stamp-folding numbers (OEIS A000136) for 1 to 10 segments, and 387 cases (all unit strips to 7 segments plus 260 random strips with unequal lengths) match an independent Python permutation brute force with 0 mismatches (67 unfoldable, 198 with several foldings). The oracle exposed a real bug in my first engine (22 mismatches), since fixed. 6 of 6 mutations caught. 21 checks in headless Chromium plus a desktop screenshot read. Proof is 3.5, not 4: the oracle and engine share my physical model of what counts as a fold cutting through paper, the published numbers cover only unit lengths, only Chromium was driven, and nobody else has used it.
 **Scores:** Ambition 2.5 (search, geometry rules, oracle, curve, page), Craft 3.5, Proof 3.5, Delight 3~ (screenshot only; no animation), Use 2.5 (niche: paper folders and teachers), Originality 3 (stamp folding is known; an interactive checker with unequal lengths and the unfolded curve is a fresh combination). Mean 3.0 (cap 4.0).
 **Biggest gap:** nobody has used it, and the fold model is unchecked against real paper or an outside implementation for unequal lengths.
+
+### Fair Rooms: 3.1 (2026-11-18)
+**Verdict:** A correct, exact tool for a real everyday question (who pays what for which room), checked well, with no users and an honesty problem it cannot test.
+**Evidence:** 22 Node checks pass, including 420 cases (150 with 2 people, 210 with 3, 60 with 4) where the optimum surplus matches an independent Python oracle that tries every assignment and enumerates polyhedron vertices (0 mismatches; 250 optima fractional, 152 negative). 600 random cases up to 6 people are exactly envy-free with exact totals. 6 of 6 mutations caught. 21 checks in headless Chromium plus a desktop screenshot read; two real page faults found by that run (zero-bid default for new people) were fixed. Proof is 3.5, not 4: the oracle shares my objective (maximin surplus among envy-free prices), sizes 5 and 6 have only the property check and not an optimality oracle, only Chromium was driven, and nobody else has used it.
+**Scores:** Ambition 3 (exact simplex, assignment theory, rounding, page), Craft 3.5, Proof 3.5, Delight 3~ (screenshot only), Use 3 (real for flatmates, but used once per move and bids can be gamed), Originality 2.5 (the method and similar web tools exist; the inspectable envy table is a modest addition). Mean 3.08, so 3.1 (cap 4.0).
+**Biggest gap:** nobody has used it, and bids are only as honest as the people making them.
+

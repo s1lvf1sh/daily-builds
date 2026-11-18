@@ -157,6 +157,15 @@
       "url": "builds/strip-folds/",
       "rating": 3.0,
       "status": "complete"
+    },
+    {
+      "title": "Fair Rooms",
+      "slug": "fair-rooms",
+      "date": "2026-11-18",
+      "blurb": "Flatmates bid on rooms and get an envy-free split of the rent that is best for the least-happy person, solved exactly; checked against an independent every-assignment vertex-enumeration oracle.",
+      "url": "builds/fair-rooms/",
+      "rating": 3.1,
+      "status": "complete"
     }
   ]
 }

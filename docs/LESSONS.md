@@ -77,3 +77,9 @@
 - Shell: a foreground command over 120 s gets backgrounded; a `sleep` followed by a command is blocked, so use short timeouts or Monitor. Playwright `page.url()` lags `history.replaceState`; read `location.hash` instead.
 - Domain done: paper folding / geometry of strips. Scores sit at 3.0. Delight and Use still cap the total; an animation or a "solve for target" mode would move them.
 
+## 2026-11-18 (Fair Rooms)
+- Same toolchain (Node 22, Python 3.11, Playwright Chromium via `NODE_PATH=$(npm root -g)`; no numpy). A short exact simplex on BigInt fractions works well in the browser; vertex enumeration with Fractions makes an independent LP oracle but is slow (about 8 minutes for 420 cases of up to 4 people): start it in the background first and write other things meanwhile.
+- A large heredoc that held a `cat > file` plus a long script was refused once by a safety check with no removal in it; writing the file with the Write tool worked. Wrap mutated engine runs in try/catch so a crash reads as a failure count.
+- The Chromium test caught a default the page itself rejected (new rows of zeros): defaults must be valid input.
+- Domain done: fair division / flatmate rent. Scores 3.1. Use is real here but one-off per move; the next idea could aim at something people return to, or at a more original mechanism.
+

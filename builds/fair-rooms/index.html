@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fair Rooms</title>
+<style>
+  :root { color-scheme: light dark; --bg:#f5f3ee; --fg:#25221d; --muted:#6c675d; --card:#fffdf8; --line:#dcd6c9; --accent:#1f6f5c; --good:#1f6f5c; --warn:#a1400f; --hi:#e3f1ea; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#15181a; --fg:#e4e1d9; --muted:#9b958a; --card:#1d2124; --line:#2f353a; --accent:#6fd1b4; --good:#6fd1b4; --warn:#f0a070; --hi:#1f3a32; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui,sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { margin:0; font-size:28px; } .lede { margin:2px 0 14px; color:var(--muted); }
+  h2 { font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:22px 0 8px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:10px 12px; min-width:0; }
+  .scroll { overflow-x:auto; }
+  table { border-collapse:collapse; width:100%; font-size:15px; } th, td { padding:4px 6px; text-align:right; white-space:nowrap; } th:first-child, td:first-child { text-align:left; }
+  thead th { font-weight:600; color:var(--muted); font-size:13px; } tbody tr + tr td, tbody tr + tr th { border-top:1px solid var(--line); }
+  input[type=text] { font:15px system-ui,sans-serif; background:var(--bg); color:var(--fg); border:1px solid var(--line); border-radius:6px; padding:5px 7px; width:100%; min-width:70px; }
+  input.num { text-align:right; font-family:ui-monospace,monospace; width:84px; }
+  input:focus-visible, button:focus-visible { outline:2px solid var(--accent); }
+  .row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:8px 0; }
+  button { font:inherit; font-size:14px; padding:5px 10px; border:1px solid var(--line); border-radius:6px; background:var(--card); color:var(--fg); cursor:pointer; } button:hover:not(:disabled) { border-color:var(--accent); } button:disabled { opacity:.45; cursor:default; }
+  .err { color:var(--warn); font-size:14px; } .err:empty { display:none; } .note { color:var(--muted); font-size:13px; }
+  .assign { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; } .assign .card b { font-size:17px; } .price { font:600 24px ui-monospace,monospace; color:var(--accent); }
+  td.best { background:var(--hi); font-weight:600; } td.neg { color:var(--warn); } .badge { display:inline-block; padding:1px 8px; border-radius:99px; background:var(--hi); color:var(--good); font-size:13px; font-weight:600; }
+  .bar { height:8px; border-radius:4px; background:var(--accent); opacity:.75; margin-top:4px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Fair Rooms</h1>
+  <p class="lede">Share a flat? Everyone says what each room is worth to them. You get a room for each person and a price for each room so that nobody would rather have someone else's room at its price.</p>
+  <section>
+    <h2>The flat</h2>
+    <div class="row">
+      <label for="rent">Total rent</label><input type="text" class="num" id="rent" inputmode="decimal" autocomplete="off" />
+      <label><input type="checkbox" id="norm" checked /> Scale each person's bids so they total the rent</label>
+    </div>
+    <div class="card scroll"><table id="grid" aria-label="What each person would pay for each room"></table></div>
+    <div class="row"><button id="addp">Add person</button><button id="delp">Remove person</button><span class="note" id="count"></span></div>
+    <div class="row" id="presets"></div>
+    <div class="err" id="err" role="alert"></div>
+    <p class="note">Bids are what each room is worth to that person, in the same currency as the rent. Rooms and people are always the same number, so adding a person adds a room.</p>
+  </section>
+  <section id="out" aria-live="polite">
+    <h2>The fair split</h2>
+    <div class="assign" id="assign"></div>
+    <p id="summary"></p>
+    <h2>Proof that nobody envies</h2>
+    <p class="note">What each person would gain (value minus price) from taking each room at the posted prices. The highlighted cell is the room they were given; it is never beaten by another cell in its row.</p>
+    <div class="card scroll"><table id="envy" aria-label="Surplus of every person in every room"></table></div>
+    <div class="row"><button id="share">Copy share link</button><span class="note" id="shared"></span></div>
+    <p class="note" id="method"></p>
+  </section>
+</main>
+<script src="src/fair.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>
