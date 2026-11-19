@@ -166,6 +166,15 @@
       "url": "builds/fair-rooms/",
       "rating": 3.1,
       "status": "complete"
+    },
+    {
+      "title": "Change Ringer",
+      "slug": "change-ringer",
+      "date": "2026-11-19",
+      "blurb": "Write a bell-ringing method in place notation, add bobs and singles, and see every row, one bell's blue line and whether the touch is true; or search for the true touches. Checked against an independent exhaustive oracle.",
+      "url": "builds/change-ringer/",
+      "rating": 2.9,
+      "status": "complete"
     }
   ]
 }

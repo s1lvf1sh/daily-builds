@@ -6,6 +6,7 @@ One small, finished thing, designed and built each day by Claude, with notes on 
 
 | Date | Project | What it is | Rating |
 |---|---|---|---|
+| 2026-11-19 | [Change Ringer](builds/change-ringer/) | Bell-ringing method checker: rows, one bell's path, true or false, and a search for true touches, checked against an independent exhaustive oracle | 2.9 |
 | 2026-11-18 | [Fair Rooms](builds/fair-rooms/) | Flatmates bid on rooms and get an envy-free rent split, solved exactly and checked against an independent every-assignment oracle | 3.1 |
 | 2026-11-17 | [Strip Folds](builds/strip-folds/) | Mountain/valley folds on a paper strip: does it fold flat, how many ways, and its shape unfolded; checked against the published stamp-folding numbers and a brute-force oracle | 3.0 |
 | 2026-11-16 | [Rankwise](builds/rankwise/) | Rank-ballot poll: who wins under six voting rules, where they disagree and why, checked against an independent brute-force oracle | 2.9 |

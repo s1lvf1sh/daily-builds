@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Change Ringer</title>
+<style>
+  :root { color-scheme: light dark; --bg:#f4f1ea; --fg:#262320; --muted:#6d675e; --card:#fffdf8; --line:#dad3c5; --accent:#2a5fa8; --treble:#b3402a; --good:#1f6f4a; --bad:#a8321f; --badbg:#f7dcd5; --hi:#e4ecf8; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#16191c; --fg:#e5e2da; --muted:#9b958a; --card:#1e2226; --line:#30363b; --accent:#7fb0f0; --treble:#f0907a; --good:#6fd1a0; --bad:#f0907a; --badbg:#46231d; --hi:#223247; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui,sans-serif; }
+  main { max-width:1000px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { margin:0; font-size:28px; } .lede { margin:2px 0 14px; color:var(--muted); max-width:70ch; }
+  h2 { font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:22px 0 8px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:10px 12px; min-width:0; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px 14px; }
+  label { display:block; font-size:13px; color:var(--muted); margin-bottom:2px; }
+  input[type=text], select, input[type=number] { font:15px ui-monospace,monospace; background:var(--bg); color:var(--fg); border:1px solid var(--line); border-radius:6px; padding:5px 7px; width:100%; min-width:0; }
+  input:focus-visible, button:focus-visible, select:focus-visible { outline:2px solid var(--accent); }
+  .row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:8px 0; }
+  button { font:inherit; font-size:14px; padding:5px 10px; border:1px solid var(--line); border-radius:6px; background:var(--card); color:var(--fg); cursor:pointer; }
+  button:hover:not(:disabled) { border-color:var(--accent); } button.primary { background:var(--accent); color:#fff; border-color:var(--accent); } button:disabled { opacity:.5; cursor:default; }
+  .err { color:var(--bad); font-size:14px; } .err:empty { display:none; } .note { color:var(--muted); font-size:13px; }
+  .badges { display:flex; flex-wrap:wrap; gap:8px; margin:6px 0; }
+  .badge { display:inline-block; padding:2px 10px; border-radius:99px; background:var(--hi); color:var(--fg); font-size:14px; } .badge.good { color:var(--good); } .badge.bad { background:var(--badbg); color:var(--bad); }
+  .leads { display:flex; flex-wrap:wrap; gap:14px; align-items:flex-start; }
+  .lead { flex:0 0 auto; } .lead h3 { margin:0 0 2px; font:600 12px system-ui,sans-serif; color:var(--muted); }
+  svg text { font:12px ui-monospace,monospace; fill:var(--fg); } svg .tre { fill:var(--treble); font-weight:700; } svg .sel { fill:var(--accent); font-weight:700; }
+  .scroll { overflow-x:auto; }
+  #found li { margin:2px 0; font-family:ui-monospace,monospace; font-size:14px; overflow-wrap:anywhere; } #found button { font-size:12px; padding:1px 7px; margin-left:6px; }
+  table { border-collapse:collapse; font-size:14px; } td, th { padding:2px 10px 2px 0; text-align:left; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Change Ringer</h1>
+  <p class="lede">Church bells are rung in changing orders, never repeating an order (a "true" touch) and ending back in rounds. Write a method in place notation, add bobs and singles, and see every row, the path of one bell, and whether the ringing is true. Or ask it to search for touches that are.</p>
+  <section>
+    <h2>Method</h2>
+    <div class="row" id="presets" role="group" aria-label="Presets"></div>
+    <div class="grid">
+      <div><label for="n">Bells</label><select id="n"></select></div>
+      <div><label for="pn">Place notation (lead; a comma or leading & mirrors)</label><input type="text" id="pn" spellcheck="false" autocomplete="off" /></div>
+      <div><label for="bob">Bob replaces the last change with</label><input type="text" id="bob" spellcheck="false" autocomplete="off" /></div>
+      <div><label for="single">Single replaces the last change with</label><input type="text" id="single" spellcheck="false" autocomplete="off" /></div>
+    </div>
+    <div class="err" id="merr" role="alert"></div>
+    <h2>Touch</h2>
+    <label for="comp">One letter per lead: p plain, - or b bob, s single</label>
+    <input type="text" id="comp" spellcheck="false" autocomplete="off" />
+    <div class="err" id="cerr" role="alert"></div>
+  </section>
+  <section aria-live="polite">
+    <h2>Result</h2>
+    <div class="badges" id="badges"></div>
+    <p id="verdict"></p>
+    <div class="row">
+      <label for="trace" style="margin:0">Follow bell</label><select id="trace" style="width:auto"></select>
+      <button id="play">Play</button><button id="share">Copy share link</button><span class="note" id="shared"></span>
+    </div>
+    <div class="card scroll"><div class="leads" id="leads"></div></div>
+    <p class="note">Blue is the bell you follow, red is the treble (bell 1). Rows with a red background are rows that occur more than once in the touch.</p>
+  </section>
+  <section>
+    <h2>Find true touches</h2>
+    <div class="row">
+      <label for="maxl" style="margin:0">Up to</label><input type="number" id="maxl" min="1" max="60" value="12" style="width:80px" /> <span class="note">leads</span>
+      <label style="margin:0"><input type="checkbox" id="ab" checked /> bobs</label>
+      <label style="margin:0"><input type="checkbox" id="as" checked /> singles</label>
+      <label style="margin:0"><input type="checkbox" id="ext" /> only the extent (every possible row once)</label>
+      <button class="primary" id="go">Search</button>
+    </div>
+    <div class="card"><div id="sumsearch" class="note">Not searched yet.</div><ol id="found"></ol></div>
+    <p class="note">The search tries every sequence of calls and drops any branch as soon as a row repeats. It stops after two million steps and says so; "no result" then does not mean none exists.</p>
+  </section>
+</main>
+<script src="src/ring.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>

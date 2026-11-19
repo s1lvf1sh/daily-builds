@@ -83,3 +83,10 @@
 - The Chromium test caught a default the page itself rejected (new rows of zeros): defaults must be valid input.
 - Domain done: fair division / flatmate rent. Scores 3.1. Use is real here but one-off per move; the next idea could aim at something people return to, or at a more original mechanism.
 
+## 2026-11-19 (Change Ringer)
+- Same toolchain (Node 22, Python 3.11, Playwright Chromium via `NODE_PATH=$(npm root -g)`; no numpy). Exhaustive enumeration of all call strings (3^k) in Python is a good oracle for a pruned search: compare the full set, not just a count. The 12-lead case took about 80 s in pure Python.
+- Compare unordered groups after sorting; my first 356 "mismatches" were only iteration order.
+- A mutant that makes a loop never end can expose accidental quadratic code (`plainCourse`); keep helper loops incremental and capped. Use `ONLY=n` style switches so one slow mutant is easy to isolate.
+- A long `cat > file` heredoc was refused by the safety check again: use the Write tool for big files. Do not create untracked scratch dirs inside the repo; use the scratchpad.
+- Domain done: change ringing / permutation patterns. Score 2.9 (Use 2: niche). Next: something with a wider audience or a genuinely new mechanism; keep hand-written expectations to a minimum.
+
