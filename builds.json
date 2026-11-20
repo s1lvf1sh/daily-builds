@@ -175,6 +175,15 @@
       "url": "builds/change-ringer/",
       "rating": 2.9,
       "status": "complete"
+    },
+    {
+      "title": "Cut List",
+      "slug": "cut-list",
+      "date": "2026-11-20",
+      "blurb": "Give it the pieces you need and the board lengths on sale (with prices if you like) and it finds the cheapest cutting plan, kerf included, proves nothing cheaper exists and draws every board; checked against an independent subset-DP oracle.",
+      "url": "builds/cut-list/",
+      "rating": 2.9,
+      "status": "complete"
     }
   ]
 }

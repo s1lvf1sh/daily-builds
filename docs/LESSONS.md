@@ -90,3 +90,9 @@
 - A long `cat > file` heredoc was refused by the safety check again: use the Write tool for big files. Do not create untracked scratch dirs inside the repo; use the scratchpad.
 - Domain done: change ringing / permutation patterns. Score 2.9 (Use 2: niche). Next: something with a wider audience or a genuinely new mechanism; keep hand-written expectations to a minimum.
 
+
+## 2026-11-20 (Cut List)
+- Same toolchain (Node 22, Python 3.11, Playwright Chromium via `NODE_PATH=$(npm root -g)`; no numpy). A subset-DP over individually listed items is a fast independent oracle for packing/partition problems (400 jobs of up to 13 items in 3 s).
+- A comparison baseline can be a straw man: my first first-fit showed "10 boards vs 5" until I made it open the best-value board. Check that a "saves X" claim compares against something a sensible person would do.
+- Hand-written expectations were wrong five times again (unit ticks, kerf arithmetic); derive from the rule or let the oracle arbitrate. Exact DP over distinct lengths took 0.26 s at 36 pieces and 13 s at 72: time a realistic big case early and give the page a labelled fallback.
+- Domain done: cutting stock / woodworking. Scores 2.9 (Use 3, Originality 2). Known problem again; for Originality try a new mechanism or toy next.

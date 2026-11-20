@@ -33,6 +33,7 @@ No project is above 4.0. Nothing here has been used by anyone else, so Proof can
 | 2026-11-17 | Strip Folds | 2.5 | 3.5 | 3.5 | 3~ | 2.5 | 3 | **3.0** | 4.0 | medium |
 | 2026-11-18 | Fair Rooms | 3 | 3.5 | 3.5 | 3~ | 3 | 2.5 | **3.1** | 4.0 | medium |
 | 2026-11-19 | Change Ringer | 2.5 | 3.5 | 3.5 | 3~ | 2 | 3 | **2.9** | 4.0 | medium |
+| 2026-11-20 | Cut List | 2.5 | 3.5 | 3.5 | 3~ | 3 | 2 | **2.9** | 4.0 | medium |
 
 ## Notes behind each rating
 
@@ -155,3 +156,9 @@ Related: AI Project Rating Scale · AI Projects MOC · Memory
 **Evidence:** 1387 Node checks pass, including Plain Bob plain courses of 24, 40, 60 and 112 rows (published figures) and plain hunt on 3 to 8 bells. An independent Python oracle agrees on 400 random place notations (53 invalid, all rejected), 600 random touches (12 true, 23 round but false) and four exhaustive searches that try every call string (Minimus 2, Doubles 29, Minor 148 true touches; Doubles has 12 extents): 0 mismatches. 8 of 8 mutants caught. 34 checks in headless Chromium, which read the drawn rows back and check each is a valid row; a desktop screenshot was read. Proof is 3.5, not 4: the oracle shares my reading of place notation, and only the plain-course lengths are outside anchors.
 **Scores:** Ambition 2.5 (parser, truth rules, search, page), Craft 3.5, Proof 3.5, Delight 3~ (screenshot only; sound unheard), Use 2 (a niche craft; calls limited to the last change of a lead), Originality 3 (ringing tools exist; this combination in a page is fresh to me). Mean 2.92, so 2.9 (cap 4.0).
 **Biggest gap:** no ringer has used it, and methods whose calls change more than the last change of a lead (Grandsire, Stedman) cannot be entered.
+
+### Cut List: 2.9 (2026-11-20)
+**Verdict:** A correct, exact cutting planner for a common chore, built on a well-known problem, with no users yet.
+**Evidence:** 1230 Node checks pass (parsing, hand-derived plans, kerf edge cases, priced choices). An independent Python subset-DP oracle agrees on 400 random jobs (1 to 13 pieces, 1 to 3 board lengths, 170 priced): 0 mismatches, and exact beat first-fit on 167 of them. 9 of 9 mutants caught (several by only 1 to 6 checks). 24 checks in headless Chromium read the drawn boards back; desktop and phone screenshots were read. Proof is 3.5, not 4: the oracle shares my kerf model, and no one has cut wood from a plan.
+**Scores:** Ambition 2.5 (exact DP, parser, drawing), Craft 3.5, Proof 3.5, Delight 3~ (screenshots only), Use 3 (a real, repeatable chore for a wide audience), Originality 2 (cutting stock is a classic problem). Mean 2.92, so 2.9 (cap 4.0).
+**Biggest gap:** nobody has used it for a real job; the kerf model and the 3 s search budget on large jobs are untested outside my own examples.

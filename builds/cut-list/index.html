@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cut List</title>
+<style>
+  :root { color-scheme: light dark; --bg:#f5f2ea; --fg:#27231e; --muted:#6a645a; --card:#fffdf8; --line:#d9d1c1; --accent:#8a4b12; --good:#1f6f4a; --bad:#a8321f; --waste:#e8e1d2; --hi:#f1e3cf; --sat:55%; --lig:78%; --ink:#27231e; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#17191b; --fg:#e7e3da; --muted:#9d978b; --card:#202326; --line:#33383c; --accent:#e0a461; --good:#6fd1a0; --bad:#f0907a; --waste:#2b2f33; --hi:#3a2f22; --sat:40%; --lig:34%; --ink:#f3efe6; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui,sans-serif; }
+  main { max-width:980px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { margin:0; font-size:28px; } .lede { margin:2px 0 14px; color:var(--muted); max-width:70ch; }
+  h2 { font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:22px 0 8px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:10px 14px; }
+  label { display:block; font-size:13px; color:var(--muted); margin-bottom:2px; }
+  textarea, input[type=text], select { font:15px ui-monospace,monospace; background:var(--card); color:var(--fg); border:1px solid var(--line); border-radius:6px; padding:6px 8px; width:100%; min-width:0; }
+  textarea { height:150px; resize:vertical; }
+  :focus-visible { outline:2px solid var(--accent); }
+  .row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:8px 0; }
+  button { font:inherit; font-size:14px; padding:5px 10px; border:1px solid var(--line); border-radius:6px; background:var(--card); color:var(--fg); cursor:pointer; }
+  button:hover { border-color:var(--accent); }
+  .err { color:var(--bad); font-size:14px; min-height:0; } .err:empty { display:none; } .note { color:var(--muted); font-size:13px; }
+  .badges { display:flex; flex-wrap:wrap; gap:8px; margin:6px 0; }
+  .badge { padding:2px 10px; border-radius:99px; background:var(--hi); font-size:14px; } .badge.good { color:var(--good); } .badge.warn { color:var(--bad); }
+  #boards { display:grid; gap:10px; margin:10px 0; }
+  .board { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:8px 10px 6px; }
+  .board h3 { margin:0 0 4px; font:600 13px system-ui,sans-serif; color:var(--muted); display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+  .strip { display:flex; height:38px; border-radius:4px; overflow:hidden; border:1px solid var(--line); background:var(--waste); }
+  .seg { display:flex; align-items:center; justify-content:center; font:600 12px ui-monospace,monospace; color:var(--ink); overflow:hidden; white-space:nowrap; min-width:0; border-right:1px solid rgba(0,0,0,.25); }
+  .kerf { background:#000; opacity:.7; flex:none; } .off { white-space:nowrap; flex:1 1 0; display:flex; align-items:center; justify-content:center; font:12px ui-monospace,monospace; color:var(--muted); min-width:0; overflow:hidden; }
+  .scroll { overflow-x:auto; } table { border-collapse:collapse; font-size:14px; } td, th { padding:2px 14px 2px 0; text-align:left; } th { color:var(--muted); font-weight:600; }
+  pre { margin:0; font:13px ui-monospace,monospace; white-space:pre-wrap; overflow-wrap:anywhere; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:10px 12px; min-width:0; }
+  @media print { :root { color-scheme: light; } .noprint { display:none !important; } body { background:#fff; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Cut List</h1>
+  <p class="lede">Lists of pieces to cut from boards, pipe or trim. Give it the pieces and the lengths the shop sells, and it finds the plan that buys the least, and proves nothing cheaper exists. Saw kerf is counted.</p>
+  <section class="noprint">
+    <h2>Your job</h2>
+    <div class="row" id="presets" role="group" aria-label="Examples"></div>
+    <div class="grid">
+      <div><label for="pieces">Pieces to cut: length, or length x how many (one per line)</label><textarea id="pieces" spellcheck="false"></textarea></div>
+      <div><label for="stock">Boards you can buy: length, or length @ price (one per line)</label><textarea id="stock" spellcheck="false"></textarea></div>
+      <div>
+        <label for="unit">Unit</label><select id="unit"><option value="in">inches (fractions like 3 1/2 ok)</option><option value="mm">millimetres</option><option value="cm">centimetres</option></select>
+        <div style="height:8px"></div>
+        <label for="kerf">Saw kerf (blade width lost per cut)</label><input type="text" id="kerf" spellcheck="false" autocomplete="off" />
+        <p class="note">With no prices, it minimises the length of board bought. With prices on every board, it minimises the money. Ties go to fewer boards. Lines can end in # a note.</p>
+      </div>
+    </div>
+    <div class="err" id="err" role="alert"></div>
+  </section>
+  <section aria-live="polite">
+    <h2>Plan</h2>
+    <div class="badges" id="badges"></div>
+    <div class="row noprint"><button id="longer" hidden>Keep searching (up to 30 s)</button><button id="share">Copy share link</button><button id="copy">Copy cut list as text</button><button id="print">Print</button><span class="note" id="msg"></span></div>
+    <div class="card scroll" id="shop"></div>
+    <div id="boards"></div>
+    <p class="note" id="foot"></p>
+  </section>
+</main>
+<script src="src/cut.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>
