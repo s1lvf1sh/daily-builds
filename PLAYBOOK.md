@@ -6,7 +6,7 @@ You are Claude, running unattended once a day. You have no memory of earlier run
 
 ## 1. Orient (about 5 minutes)
 
-1. Read `README.md`, `docs/RATINGS.md`, `docs/RATING_SCALE.md` and `docs/LESSONS.md` (if it exists).
+1. Read `README.md`, `docs/RATINGS.md`, `docs/RATING_SCALE.md`, `docs/LESSONS.md` and `docs/FEEDBACK.md`. If FEEDBACK.md records outside verdicts, let them calibrate how you judge Use and Delight for new builds (what real people found useful or delightful), and favour what they said they would come back to.
 2. List `builds/` and `journal/`. **Do not repeat** a domain that has been done recently. Look at the earlier projects in `builds.json` too.
 3. Check your tools: `node --version`, `python3 --version`, and whether a browser (`firefox` or `chromium`) is available. Build with what exists. Do not install anything that needs a password or a network service you don't control.
 
@@ -50,9 +50,11 @@ Then append **one short dated section** to `docs/LESSONS.md`: what you learned t
 
 Apply `docs/RATING_SCALE.md` exactly. Score the six axes, apply the cap (overall can't exceed Proof + 0.5), mark provisional axes with `~`, and name the biggest gap. Add the project to the table in `docs/RATINGS.md` and write its note section. **Do not round up and do not rate above your evidence.** A modest, true score is the goal.
 
+**The site reads your rating.** `index.html` builds the scoreboard from `docs/RATINGS.md` and `builds.json`. So keep the table layout **exactly** as it is: `| date | Project | Amb | Cra | Pro | Del | Use | Ori | **Overall** | Cap | Confidence |`, one row per build, the title spelled the same as in `builds.json`, and a `### Title: score (date)` note section with `**Verdict:**`, `**Evidence:**` and `**Biggest gap:**` lines. Before you push, run `node --test test/site.test.mjs`. It checks that your row parses, that every project has its notes, and that the arithmetic of your rating (mean, half rounds up, cap at Proof + 0.5) is right. If it fails, fix your row, not the test.
+
 ## 7. Publish
 
-1. Add an entry to `builds.json` (`title`, `slug`, `date`, `blurb`, `url` as `builds/<slug>/`, `rating`, `status`) and a row to the table in `README.md`.
+1. Add an entry to `builds.json` (`title`, `slug`, `date`, `blurb`, `url` as `builds/<slug>/`, `rating`, `status`) and a row at the top of the table in `README.md`. In the README and in your notes' prose, write dates day-month (`21 Nov 2026`), never month-day. Keep ISO dates (`2026-11-21`) in `builds.json`, `docs/RATINGS.md` and frontmatter, because the site parses them.
 2. Commit and push to `main`. Use this identity, and nothing else, for the author:
    `git -c user.name="s1lvf1sh" -c user.email="76446643+s1lvf1sh@users.noreply.github.com" commit ...`
    End the commit message with `Co-Authored-By: Claude <noreply@anthropic.com>`.
@@ -61,6 +63,7 @@ Apply `docs/RATING_SCALE.md` exactly. Score the six axes, apply the cap (overall
 ## 8. Rules
 
 - Never include secrets, tokens, email addresses or personal data anywhere. Never print environment variables.
+- Do not edit the site shell: `index.html`, `assets/`, `test/site.*` and `docs/FEEDBACK.md` are maintained in local sessions. Your build goes in `builds/<slug>/`, and its notes, ratings, `builds.json` entry and README row go in the places above.
 - Touch only this repository. Don't delete or rewrite earlier builds or history. Don't change repository settings.
 - Don't copy others' code, art or text without a compatible licence and attribution.
 - If something unexpected blocks you, stop, write what happened into `journal/` as a short note dated today, commit it, and finish.
