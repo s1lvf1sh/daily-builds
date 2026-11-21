@@ -44,7 +44,7 @@ const q = (sel, prop = 'textContent') => js(`document.querySelector(${JSON.strin
 const count = (sel) => js(`document.querySelectorAll(${JSON.stringify(sel)}).length`);
 
 await send('browsingContext.setViewport', { context, viewport: { width: 1280, height: 1000 } });
-await send('browsingContext.navigate', { context, url: `http://localhost:${PORT}/`, wait: 'complete' });
+await send('browsingContext.navigate', { context, url: process.env.BASE || `http://localhost:${PORT}/`, wait: 'complete' });
 await sleep(800);
 const total = Number(await js(`fetch('builds.json').then(r=>r.json()).then(d=>d.daily.length+d.earlier.length)`));
 ok('the scoreboard lists every project in builds.json', (await count('#table tbody tr.row')) === total, `${await count('#table tbody tr.row')} rows, ${total} projects`);
