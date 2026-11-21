@@ -184,6 +184,15 @@
       "url": "builds/cut-list/",
       "rating": 2.9,
       "status": "complete"
+    },
+    {
+      "title": "Sparse Ruler",
+      "slug": "sparse-ruler",
+      "date": "2026-11-21",
+      "blurb": "The fewest marks a stick needs to measure every length (or only the lengths you list), proven minimal when the search can finish, with clickable marks and a map of who measures what; checked against an independent every-mark-set oracle.",
+      "url": "builds/sparse-ruler/",
+      "rating": 2.8,
+      "status": "complete"
     }
   ]
 }

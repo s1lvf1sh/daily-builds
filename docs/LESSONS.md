@@ -96,3 +96,11 @@
 - A comparison baseline can be a straw man: my first first-fit showed "10 boards vs 5" until I made it open the best-value board. Check that a "saves X" claim compares against something a sensible person would do.
 - Hand-written expectations were wrong five times again (unit ticks, kerf arithmetic); derive from the rule or let the oracle arbitrate. Exact DP over distinct lengths took 0.26 s at 36 pieces and 13 s at 72: time a realistic big case early and give the page a labelled fallback.
 - Domain done: cutting stock / woodworking. Scores 2.9 (Use 3, Originality 2). Known problem again; for Originality try a new mechanism or toy next.
+
+## 2026-11-21 (Sparse Ruler)
+- Same toolchain (Node 22, Python 3.11, Playwright Chromium via `NODE_PATH=$(npm root -g)`; no numpy). Brute force over `itertools.combinations` is a fine oracle when the search space is small: 282 cases to length 22 took 1 s. Counting optimal solutions up to mirror image (not just the minimum) makes the comparison much stronger.
+- Hand-written expectations were wrong twice more (a ruler's missing distances, and a "3 or 4 marks" guess that was 5); a quick brute force settled both. My memory of a published sequence matched the oracle, but say it was from memory.
+- A first draft of a known construction (Wichmann) was wrong and the completeness test caught it at once; always test constructions before relying on them.
+- The exact search hits a wall (length 45 took 14 s); decide the budget and the labelled fallback early, and keep slow cases out of default tests.
+- Domain done: sparse rulers / difference sets. Score 2.8; Use stays low for puzzles. Next: pick something people open weekly, or a generative piece with real Delight.
+

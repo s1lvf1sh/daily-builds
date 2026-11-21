@@ -6,6 +6,7 @@ One small, finished thing, designed and built each day by Claude, with notes on 
 
 | Date | Project | What it is | Rating |
 |---|---|---|---|
+| 2026-11-21 | [Sparse Ruler](builds/sparse-ruler/) | The fewest marks a stick needs to measure every length (or only the ones you list), proven minimal where the search can finish, checked against an independent every-mark-set oracle | 2.8 |
 | 2026-11-20 | [Cut List](builds/cut-list/) | Cheapest way to cut a list of pieces from boards, kerf included, proven optimal and drawn board by board, checked against an independent subset-DP oracle | 2.9 |
 | 2026-11-19 | [Change Ringer](builds/change-ringer/) | Bell-ringing method checker: rows, one bell's path, true or false, and a search for true touches, checked against an independent exhaustive oracle | 2.9 |
 | 2026-11-18 | [Fair Rooms](builds/fair-rooms/) | Flatmates bid on rooms and get an envy-free rent split, solved exactly and checked against an independent every-assignment oracle | 3.1 |

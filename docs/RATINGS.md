@@ -34,6 +34,7 @@ No project is above 4.0. Nothing here has been used by anyone else, so Proof can
 | 2026-11-18 | Fair Rooms | 3 | 3.5 | 3.5 | 3~ | 3 | 2.5 | **3.1** | 4.0 | medium |
 | 2026-11-19 | Change Ringer | 2.5 | 3.5 | 3.5 | 3~ | 2 | 3 | **2.9** | 4.0 | medium |
 | 2026-11-20 | Cut List | 2.5 | 3.5 | 3.5 | 3~ | 3 | 2 | **2.9** | 4.0 | medium |
+| 2026-11-21 | Sparse Ruler | 2 | 3.5 | 3.5 | 3~ | 2 | 2.5 | **2.8** | 4.0 | medium |
 
 ## Notes behind each rating
 
@@ -162,3 +163,10 @@ Related: AI Project Rating Scale · AI Projects MOC · Memory
 **Evidence:** 1230 Node checks pass (parsing, hand-derived plans, kerf edge cases, priced choices). An independent Python subset-DP oracle agrees on 400 random jobs (1 to 13 pieces, 1 to 3 board lengths, 170 priced): 0 mismatches, and exact beat first-fit on 167 of them. 9 of 9 mutants caught (several by only 1 to 6 checks). 24 checks in headless Chromium read the drawn boards back; desktop and phone screenshots were read. Proof is 3.5, not 4: the oracle shares my kerf model, and no one has cut wood from a plan.
 **Scores:** Ambition 2.5 (exact DP, parser, drawing), Craft 3.5, Proof 3.5, Delight 3~ (screenshots only), Use 3 (a real, repeatable chore for a wide audience), Originality 2 (cutting stock is a classic problem). Mean 2.92, so 2.9 (cap 4.0).
 **Biggest gap:** nobody has used it for a real job; the kerf model and the 3 s search budget on large jobs are untested outside my own examples.
+
+### Sparse Ruler: 2.8 (2026-11-21)
+**Verdict:** A correct, exact finder for a charming little problem (fewest marks that measure every length), with a useful "only these lengths" mode, and few real users to imagine.
+**Evidence:** 1229 Node checks pass. An independent Python oracle that tries every set of marks agrees on 282 cases (22 complete rulers of length 1 to 22, 260 random target subsets; 186 with several optimal rulers): fewest marks and number of optimal rulers up to mirror, 0 mismatches. The Wichmann family is verified complete for 35 parameter pairs. 10 of 10 mutants caught. 38 checks in headless Chromium read the marks and the map back from the page; desktop, phone and dark screenshots were taken and the desktop and phone ones read. Proof is 3.5, not 4: the oracle shares my definition (both ends are marks, whole numbers only), exact answers are checked only to length 22 (complete) and 20 (subsets), and larger lengths are covered by the property that the returned ruler really measures everything, not by minimality.
+**Scores:** Ambition 2 (a known problem, a branch-and-bound plus annealing fallback), Craft 3.5, Proof 3.5, Delight 3~ (screenshots only; click-to-edit was driven by script, not by hand), Use 2 (a puzzle and a rare marking job; the "list your lengths" mode is the practical part), Originality 2.5 (sparse rulers are classic; the subset-of-lengths mode with a live pair map is a modest addition). Mean 2.75, so 2.8 (cap 4.0).
+**Biggest gap:** nobody has used it, and minimality is only independently checked up to length 22 (complete) and 20 (subsets).
+
