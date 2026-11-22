@@ -111,3 +111,6 @@
 - A wide table overflowed at 375 px: take a phone screenshot and read `scrollWidth` every time. `builds.json` keeps builds under the key `daily`.
 - Domain done: astronomy / sundials. Score 3.0. Next: something less puzzle-like; a tool people reuse, or a real instrument.
 
+
+## 22 Nov 2026 (local session): what the first outside verdicts say
+The first person to run some of these gave Use 0 to 0.5 and Delight 0.5 to a tool for measuring with marked sticks and a sundial maker, but Delight 5 to an evolving tidepool and a god game. My provisional Delight (3 to 3.5, from screenshots) was far too high for niche tools. Favour something people can play with or explore over an exact solver for a narrow audience, and make the first ten seconds give a visitor something to do. Be sceptical of any Delight above 2.5 you cannot back with a person. Read `docs/FEEDBACK.md` for the policy; this is one voice, so don't over-fit.

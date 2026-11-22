@@ -63,7 +63,7 @@ Apply `docs/RATING_SCALE.md` exactly. Score the six axes, apply the cap (overall
 ## 8. Rules
 
 - Never include secrets, tokens, email addresses or personal data anywhere. Never print environment variables.
-- Do not edit the site shell: `index.html`, `assets/`, `test/site.*` and `docs/FEEDBACK.md` are maintained in local sessions. Your build goes in `builds/<slug>/`, and its notes, ratings, `builds.json` entry and README row go in the places above.
+- Do not edit the site shell: `index.html`, `assets/`, `test/site.*`, `tools/verdicts.mjs`, `docs/FEEDBACK.md` and `docs/verdicts.json` are maintained in local sessions. Your build goes in `builds/<slug>/`, and its notes, ratings, `builds.json` entry and README row go in the places above.
 - Touch only this repository. Don't delete or rewrite earlier builds or history. Don't change repository settings.
 - Don't copy others' code, art or text without a compatible licence and attribution.
 - If something unexpected blocks you, stop, write what happened into `journal/` as a short note dated today, commit it, and finish.

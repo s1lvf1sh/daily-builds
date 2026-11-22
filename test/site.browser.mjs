@@ -104,6 +104,18 @@ await key('');
 await sleep(200);
 ok('Enter on a project name opens it (keyboard works)', (await count('tr.detail')) === 1);
 
+// a re-rated project shows what the person said, and what its score was before
+const base = process.env.BASE || `http://localhost:${PORT}/`;
+await send('browsingContext.navigate', { context, url: base + '#tidepool', wait: 'complete' });
+await send('browsingContext.reload', { context, wait: 'complete' });
+await sleep(800);
+ok('a link to #tidepool opens that project', (await count('tr.detail')) === 1 && (await js(`document.querySelector('tr.detail').id`)) === 'detail-tidepool');
+const det = await q('tr.detail');
+ok('it shows the quote exactly as plain text, and the score before the verdict', det.includes('therapeutic appeal') && det.includes('was 3.2 before an outside verdict'), det.slice(0, 0));
+ok('the "verdicts from anyone but Claude" tile counts the recorded verdicts', (await q('#stats .stat:nth-child(6) b')) === String(await js(`fetch('docs/verdicts.json').then(r=>r.json()).then(d=>d.verdicts.length)`)), await q('#stats .stat:nth-child(6) b'));
+ok('no markup was injected from a note (quotes are text nodes)', (await count('tr.detail blockquote *:not(.meta):not(p)')) === 0);
+await shot('detail-verdict.png');
+
 // phone width
 await send('browsingContext.setViewport', { context, viewport: { width: 390, height: 844 } });
 await sleep(300);

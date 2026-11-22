@@ -1,4 +1,4 @@
-import { REPO, AXES, PROOF_LADDER, fmtDate, fmtShort, keyOf, parseRatings, parseNotes, mergeBuilds, scoreScale, axisMeans, exportVerdicts, issueUrl, stepToHalf } from './lib.js';
+import { REPO, idOf, AXES, PROOF_LADDER, fmtDate, fmtShort, keyOf, parseRatings, parseNotes, mergeBuilds, scoreScale, axisMeans, exportVerdicts, issueUrl, stepToHalf } from './lib.js';
 
 // Everything on the page is built with textContent, never innerHTML, because the notes come from files
 // a daily unattended run edits.
@@ -24,14 +24,13 @@ const saveV = (v) => { memory = v; try { localStorage.setItem(STORE, JSON.string
 let verdicts = loadV();
 
 const state = { builds: [], sort: 'date', dir: -1, group: 'all', open: null };
-const idOf = (b) => b.slug || keyOf(b.title).replace(/ /g, '-');
 
 // ---- load ------------------------------------------------------------------------------------------
 async function load() {
-  const [index, ratingsMd, feedbackMd] = await Promise.all([
+  const [index, ratingsMd, verdictLog] = await Promise.all([
     fetch('builds.json').then((r) => r.json()),
     fetch('docs/RATINGS.md').then((r) => (r.ok ? r.text() : '')).catch(() => ''),
-    fetch('docs/FEEDBACK.md').then((r) => (r.ok ? r.text() : '')).catch(() => ''),
+    fetch('docs/verdicts.json').then((r) => (r.ok ? r.json() : { verdicts: [] })).catch(() => ({ verdicts: [] })),
   ]);
   const rows = parseRatings(ratingsMd);
   state.builds = mergeBuilds(index, rows, parseNotes(ratingsMd));
@@ -41,8 +40,8 @@ async function load() {
     n.hidden = false;
     n.textContent = `No per-axis scores could be read for: ${missing.join(', ')}. Only their overall score is shown.`;
   }
-  const m = /verdict-count:\s*(\d+)/.exec(feedbackMd);
-  state.outside = m ? Number(m[1]) : 0;
+  state.log = Array.isArray(verdictLog.verdicts) ? verdictLog.verdicts : [];
+  state.outside = state.log.length;
   renderAll();
   const hash = decodeURIComponent(location.hash.slice(1));
   const hit = state.builds.find((b) => idOf(b) === hash);
@@ -100,7 +99,7 @@ function renderTable() {
     tbody.append(h('tr', { class: 'row' + (open ? ' open' : ''), id: 'row-' + id },
       h('td', {}, h('button', { class: 'name', type: 'button', 'aria-expanded': open, 'aria-controls': 'detail-' + id, onclick: () => toggle(id) }, b.title), h('span', { class: 'when' }, fmtDate(b.date))),
       AXES.map((a) => cell(b.axes && b.axes[a.key])),
-      h('td', { class: 'cell overall' }, h('span', { class: 'n' }, b.overall != null ? fmt(b.overall) : '–'), b.overall != null ? h('span', { class: 'bar', style: `--w:${(b.overall / 5) * 100}%`, 'aria-hidden': 'true' }) : '')));
+      h('td', { class: 'cell overall' }, h('span', { class: 'n' }, b.overall != null ? b.overall.toFixed(1) : '–'), b.overall != null ? h('span', { class: 'bar', style: `--w:${(b.overall / 5) * 100}%`, 'aria-hidden': 'true' }) : '')));
     if (open) tbody.append(detailRow(b, id));
   }
 }
@@ -109,6 +108,16 @@ function toggle(id) {
   try { history.replaceState(null, '', state.open ? '#' + encodeURIComponent(state.open) : location.pathname); } catch { /* ignore */ }
   renderTable();
   if (state.open) document.getElementById('detail-' + state.open)?.querySelector('input')?.focus({ preventScroll: true });
+}
+
+// What people who ran a project said. Shown as plain text only; the notes are untrusted input.
+function said(id) {
+  const vs = (state.log || []).filter((v) => v.build === id);
+  if (!vs.length) return '';
+  return [h('h3', {}, vs.length === 1 ? 'What one person said' : `What ${vs.length} people said`),
+    ...vs.map((v) => h('blockquote', { class: 'quote' },
+      h('div', { class: 'meta' }, [v.use != null ? `Use ${fmt(v.use)}` : null, v.delight != null ? `Delight ${fmt(v.delight)}` : null, v.ran_it ? 'ran it' : 'did not run it', v.would_return ? 'would return' : 'would not return'].filter(Boolean).join(' · ')),
+      v.note ? h('p', {}, `“${v.note}”`) : ''))];
 }
 
 // ---- detail row with the verdict form --------------------------------------------------------------
@@ -121,10 +130,11 @@ function detailRow(b, id) {
   const left = h('div', {},
     h('p', {}, b.blurb),
     h('div', { class: 'links' }, links),
-    h('p', { class: 'meta' }, `Overall ${b.overall != null ? fmt(b.overall) : '–'}`, b.cap ? ` · cap ${fmt(b.cap)}` : '', b.confidence ? ` · confidence ${b.confidence}` : '', b.status !== 'complete' ? ` · ${b.status}` : ''),
+    h('p', { class: 'meta' }, `Overall ${b.overall != null ? fmt(b.overall) : '–'}`, b.original ? ` (was ${fmt(b.original.overall)} before an outside verdict)` : '', b.cap ? ` · cap ${fmt(b.cap)}` : '', b.confidence ? ` · confidence ${b.confidence}` : '', b.status !== 'complete' ? ` · ${b.status}` : ''),
     n && n.verdict ? [h('h3', {}, 'Verdict'), h('p', {}, n.verdict)] : '',
     n && n.evidence ? [h('h3', {}, 'Evidence'), h('p', {}, n.evidence)] : '',
-    n && n.gap ? [h('h3', {}, 'Biggest gap'), h('p', {}, n.gap)] : '');
+    n && n.gap ? [h('h3', {}, 'Biggest gap'), h('p', {}, n.gap)] : '',
+    said(id));
 
   const fields = {};
   const sliders = ['use', 'del'].map((k) => {

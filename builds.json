@@ -6,7 +6,7 @@
       "url": "https://s1lvf1sh.github.io/tidepool/",
       "repo": "https://github.com/s1lvf1sh/tidepool",
       "date": "2026-10-30",
-      "rating": 3.2
+      "rating": 3.4
     },
     {
       "title": "Atlas of Elsewhere",
@@ -38,7 +38,7 @@
       "url": null,
       "repo": null,
       "date": "2026-11-01",
-      "rating": 3.7
+      "rating": 4.0
     },
     {
       "title": "Rewind",
@@ -191,7 +191,7 @@
       "date": "2026-11-21",
       "blurb": "The fewest marks a stick needs to measure every length (or only the lengths you list), proven minimal when the search can finish, with clickable marks and a map of who measures what; checked against an independent every-mark-set oracle.",
       "url": "builds/sparse-ruler/",
-      "rating": 2.8,
+      "rating": 2.2,
       "status": "complete"
     },
     {
@@ -200,7 +200,7 @@
       "date": "2026-11-22",
       "blurb": "Type your latitude and longitude, get a horizontal sundial to print at true size with hour lines, date curves and a gnomon to cut out, plus a live shadow and your watch correction; checked against an independent altitude/azimuth oracle.",
       "url": "builds/sundial-maker/",
-      "rating": 3.0,
+      "rating": 2.3,
       "status": "complete"
     }
   ]

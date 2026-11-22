@@ -176,3 +176,34 @@ Related: AI Project Rating Scale · AI Projects MOC · Memory
 **Evidence:** 3493 Node checks pass. An independent Python oracle using different formulas (closed-form hour angle; altitude and azimuth; Meeus solar position; minute-by-minute day length) agrees on 165 hour-line cases, 1,416 live nodus-shadow cases in both hemispheres (to 1e-6), 365 days of declination and equation of time (max 0.44 degrees, 0.79 min) and 117 day lengths (within 1.0 min given the oracle's declination). 10 of 10 engine mutants caught (the weakest by 2 checks), and a mutant engine fails the browser test. 24 checks in headless Chromium, including shadow tip on the hour line and 180 mm width in print media. Desktop and 375 px screenshots were read (a phone overflow was found and fixed). Proof is 3.5, not 4: the oracle shares my sign conventions and the astronomy series is only good to 0.44 degrees; nothing was printed or built.
 **Scores:** Ambition 2.5 (several subsystems: astronomy, 3-D projection, printable layout, clock maths), Craft 3.5, Proof 3.5, Delight 3.5~ (shadow moves with a slider and the plate looks like a real dial, judged from screenshots only), Use 2.5 (someone could build a garden sundial from it, but it is a once-per-person job), Originality 2.5 (sundial generators exist; the live shadow plus watch-correction row is a modest combination). Mean 3.0, cap 4.0.
 **Biggest gap:** nobody has printed it and built a dial to see whether it tells the time; the printed scale was only checked in emulated print media.
+
+## Re-ratings after outside verdicts
+
+Each row below is a **new dated entry**; the original rating stays above and is never overwritten (rule 6 of the scale). A re-rating is computed from the *original* scores plus every recorded verdict in `docs/verdicts.json`, by `node tools/verdicts.mjs rerate`, using the policy in `docs/FEEDBACK.md`. Proof is not changed by these verdicts. The site shows the latest row for each project.
+
+| Date | Project | Amb | Cra | Pro | Del | Use | Ori | **Overall** | Cap | Confidence |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-11-21 | Lets Play God | 5 | 3.5~ | 4 | 5 | 3.5 | 3 | **4.0** | 4.5 | low, 1 outside voice |
+| 2026-11-21 | Tidepool | 4 | 3.5 | 3 | 4.5 | 2.5 | 3 | **3.4** | 3.5 | medium, 1 outside voice |
+| 2026-11-22 | Sparse Ruler | 2 | 3.5 | 3.5 | 0.5 | 1 | 2.5 | **2.2** | 4.0 | medium, 1 outside voice |
+| 2026-11-22 | Sundial Maker | 2.5 | 3.5 | 3.5 | 0.5 | 1.5 | 2.5 | **2.3** | 4.0 | medium, 1 outside voice |
+
+### Tidepool: 3.4 (21 Nov 2026, outside verdict)
+**Verdict:** One person ran it and found it genuinely absorbing to watch; it also inspired Lets Play God. Delight and Use go up.
+**Evidence:** One outside verdict (ran it, would not return). Use 3 (my 2 averaged with it, giving 2.5) and Delight 5 (my 3.5 averaged with it, giving 4.5). They said it has "a therapeutic appeal" and that changing parameters to see what you can influence is the draw. Proof is unchanged at 3: the verdict says nothing about whether the evolution is correct.
+**Biggest gap:** this is one voice, and it belongs to the person who asked for these projects, so it is not a neutral sample.
+
+### Lets Play God: 4.0 (21 Nov 2026, outside verdict)
+**Verdict:** A person played it and called it a fun little game they want to expand; the goals need balancing so they are a challenge.
+**Evidence:** One outside verdict (ran it, would return). Use 4 (my 3 averaged with it, giving 3.5) and Delight 5, which replaces my provisional 3.5, a guess made from documentation and screenshots. They asked for "a bit more balance and play test" so that strategies develop. Craft is still provisional: I have not read the code.
+**Biggest gap:** balance. The goals are not yet a challenge, and only one person has played it.
+
+### Sparse Ruler: 2.2 (22 Nov 2026, outside verdict)
+**Verdict:** One person ran it and could not think of a practical use; both Use and Delight drop sharply.
+**Evidence:** One outside verdict (ran it, would not return). Use 0 (my 2 averaged with it, giving 1) and Delight 0.5, which replaces my provisional 3. Their note was a joke about needing it for "an odd length stick" in a dungeon, which I read as no practical use rather than as a bug report. The correctness evidence (oracle comparison) is unchanged.
+**Biggest gap:** the person is not in the audience for it, and it is one voice. What it does show is that my Delight guess of 3, made from a screenshot, was well above a real first reaction.
+
+### Sundial Maker: 2.3 (22 Nov 2026, outside verdict)
+**Verdict:** One person ran it and found little to hold their attention; Use and Delight drop.
+**Evidence:** One outside verdict (ran it, would not return). Use 0.5 (my 2.5 averaged with it, giving 1.5) and Delight 0.5, which replaces my provisional 3.5. They said they are not in the audience of people who want to build a sundial, and called it "interesting as a thought experiment" with little to catch the user. Correctness evidence is unchanged.
+**Biggest gap:** still nobody has printed it and built a dial, which was already the gap. The verdict suggests the page does not engage a visitor who is not already set on building one.

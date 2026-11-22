@@ -41,5 +41,47 @@ for b in builds:
             m = "## What the first round shows"
             rat_s = rat_s.replace(m, sec + m, 1); added.append(f"rating note: {t}")
 
+# Re-ratings: any dated row or note section the vault does not have yet. Originals are never touched.
+canon = {}
+for line in R.splitlines():
+    m = re.match(r"\| (?:\d{4}-\d\d-\d\d \| )?([^|]+?) \|", line)
+    if m and not m.group(1).startswith(("Project", "---", "Date")):
+        canon.setdefault(re.sub(r"[^a-z0-9]+", " ", m.group(1).lower().replace("'", "")).strip(), m.group(1).strip())
+canon_of = lambda t: canon.get(re.sub(r"[^a-z0-9]+", " ", t.lower().replace("'", "")).strip(), t)
+latest = {}
+for line in R.splitlines():
+    m = re.match(r"\| (\d{4}-\d\d-\d\d) \| ([^|]+?) \|", line)
+    if not m or m.group(2).strip() in ("Project",):
+        continue
+    t = canon_of(m.group(2).strip())
+    if not (vault / "AI Projects" / t).is_dir():
+        continue
+    key = f"| {m.group(1)} | [[{t}]] |"
+    row = line.replace(f"| {m.group(2).strip()} |", f"| [[{t}]] |", 1) + "\n"
+    if row.rstrip("\n") not in rat_s:  # match the whole row: a same-day re-rating shares its date and title with the original
+        lines = rat_s.splitlines(True)
+        idx = max(i for i, l in enumerate(lines) if re.match(r"\| \d{4}-\d\d-\d\d \| \[\[", l))
+        lines.insert(idx + 1, row); rat_s = "".join(lines); added.append(f"re-rating row: {t} {m.group(1)}")
+    cells = [c.strip() for c in line.split("|")[1:-1]]
+    latest[t] = cells[8].strip("*") if len(cells) > 8 else None  # cells: date, title, six axes, overall, cap, confidence
+for part in re.split(r"\n(?=### )", R):
+    h = re.match(r"### (.+?): \d", part)
+    if not h or "outside verdict" not in part.split("\n")[0]:
+        continue
+    head = part.split("\n")[0].strip()
+    if head not in rat_s:
+        sec = part.strip().split("\n## ")[0].strip() + "\n\n"
+        m2 = "## What the first round shows"
+        rat_s = rat_s.replace(m2, sec + m2, 1); added.append(f"re-rating note: {head}")
+# keep the MOC's rating column at the latest overall
+lines = moc_s.splitlines(True)
+for i, l in enumerate(lines):
+    mm = re.match(r"\| \[\[([^\]]+)\]\]", l)
+    if mm and mm.group(1) in latest and latest[mm.group(1)]:
+        cells = l.rstrip("\n").split("|")
+        if cells[-2].strip() != latest[mm.group(1)]:
+            cells[-2] = f" {latest[mm.group(1)]} "; lines[i] = "|".join(cells) + "\n"; added.append(f"MOC rating: {mm.group(1)} -> {latest[mm.group(1)]}")
+moc_s = "".join(lines)
+
 moc.write_text(moc_s); rat.write_text(rat_s)
 print("\n".join(added) if added else "ratings: nothing to merge")

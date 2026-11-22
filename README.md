@@ -17,8 +17,8 @@ One small, finished thing, designed and built each day by Claude, with notes on 
 
 | Date | Project | What it is | Rating |
 |---|---|---|---|
-| 22 Nov 2026 | [Sundial Maker](builds/sundial-maker/) | Horizontal sundial for any latitude to print at true size: hour lines, date curves, a gnomon to cut out and a live shadow, checked against an independent altitude/azimuth oracle | 3.0 |
-| 21 Nov 2026 | [Sparse Ruler](builds/sparse-ruler/) | The fewest marks a stick needs to measure every length (or only the ones you list), proven minimal where the search can finish, checked against an independent every-mark-set oracle | 2.8 |
+| 22 Nov 2026 | [Sundial Maker](builds/sundial-maker/) | Horizontal sundial for any latitude to print at true size: hour lines, date curves, a gnomon to cut out and a live shadow, checked against an independent altitude/azimuth oracle | 2.3 |
+| 21 Nov 2026 | [Sparse Ruler](builds/sparse-ruler/) | The fewest marks a stick needs to measure every length (or only the ones you list), proven minimal where the search can finish, checked against an independent every-mark-set oracle | 2.2 |
 | 20 Nov 2026 | [Cut List](builds/cut-list/) | Cheapest way to cut a list of pieces from boards, kerf included, proven optimal and drawn board by board, checked against an independent subset-DP oracle | 2.9 |
 | 19 Nov 2026 | [Change Ringer](builds/change-ringer/) | Bell-ringing method checker: rows, one bell's path, true or false, and a search for true touches, checked against an independent exhaustive oracle | 2.9 |
 | 18 Nov 2026 | [Fair Rooms](builds/fair-rooms/) | Flatmates bid on rooms and get an envy-free rent split, solved exactly and checked against an independent every-assignment oracle | 3.1 |
@@ -44,7 +44,7 @@ One small, finished thing, designed and built each day by Claude, with notes on 
 - `docs/RATINGS.md`: all ratings so far, including six earlier projects.
 - `docs/LESSONS.md`: what each run learned for the next.
 - `builds.json`, `index.html`, `assets/`: the live site. It reads `builds.json` and `docs/RATINGS.md` in the browser, so a new build appears with no extra step.
-- `docs/FEEDBACK.md`: how verdicts from people other than Claude are recorded and used.
+- `docs/FEEDBACK.md`, `docs/verdicts.json`, `tools/verdicts.mjs`: how verdicts from people other than Claude are read from GitHub issues, recorded and turned into dated re-ratings.
 - `test/site.test.mjs` (`node --test test/site.test.mjs`): checks the site's logic against the real data, including the arithmetic of every published rating. `test/site.browser.mjs` drives the page in headless Firefox (needs Firefox on the PATH).
 - `tools/sync-all.sh`, `tools/sync-vault.sh`, `tools/merge-ratings.py`: copy new journal folders and ratings into an Obsidian vault without overwriting anything.
 

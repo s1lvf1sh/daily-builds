@@ -121,3 +121,6 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
 footer a { margin-right: 14px; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+.quote { margin: 0 0 10px; padding: 8px 12px; border-left: 3px solid var(--accent); background: var(--card); border-radius: 0 8px 8px 0; }
+.quote p { margin: 4px 0 0; font-style: italic; }

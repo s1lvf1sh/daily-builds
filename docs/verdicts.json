@@ -1,0 +1,49 @@
+{
+  "schema": "daily-builds-verdict-log/1",
+  "verdicts": [
+    {
+      "voter": "v-645c5895",
+      "build": "lets-play-god",
+      "ran_it": true,
+      "would_return": true,
+      "use": 4,
+      "delight": 5,
+      "note": "It's a fun little game and I am keen to expand and improve, very impressed what was produced and how it plays.  Just needs a bit more balance and play test to make the goals a bit of a challenge and develop some strategies.",
+      "issue": 1,
+      "date": "2026-11-21"
+    },
+    {
+      "voter": "v-645c5895",
+      "build": "sparse-ruler",
+      "ran_it": true,
+      "would_return": false,
+      "use": 0,
+      "delight": 0.5,
+      "note": "Cant think of a practical implementation right now, but in a post apocalyptic survival situation I may come to regret not paying more attention if i find myself in a dungeon with only an odd length stick and i need to map the labyrinth",
+      "issue": 3,
+      "date": "2026-11-22"
+    },
+    {
+      "voter": "v-645c5895",
+      "build": "sundial-maker",
+      "ran_it": true,
+      "would_return": false,
+      "use": 0.5,
+      "delight": 0.5,
+      "note": "i am not in the audience of people who was thinking about building a sundial.  Interesting as a though experiment there really isn't much to catch the user.",
+      "issue": 2,
+      "date": "2026-11-22"
+    },
+    {
+      "voter": "v-645c5895",
+      "build": "tidepool",
+      "ran_it": true,
+      "would_return": false,
+      "use": 3,
+      "delight": 5,
+      "note": "It has a therapeutic appeal watching the evolution and changing parameters to see what you can influence and it inspired let's play god",
+      "issue": 1,
+      "date": "2026-11-21"
+    }
+  ]
+}
