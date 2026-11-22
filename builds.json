@@ -193,6 +193,15 @@
       "url": "builds/sparse-ruler/",
       "rating": 2.8,
       "status": "complete"
+    },
+    {
+      "title": "Sundial Maker",
+      "slug": "sundial-maker",
+      "date": "2026-11-22",
+      "blurb": "Type your latitude and longitude, get a horizontal sundial to print at true size with hour lines, date curves and a gnomon to cut out, plus a live shadow and your watch correction; checked against an independent altitude/azimuth oracle.",
+      "url": "builds/sundial-maker/",
+      "rating": 3.0,
+      "status": "complete"
     }
   ]
 }

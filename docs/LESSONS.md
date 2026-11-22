@@ -104,3 +104,10 @@
 - The exact search hits a wall (length 45 took 14 s); decide the budget and the labelled fallback early, and keep slow cases out of default tests.
 - Domain done: sparse rulers / difference sets. Score 2.8; Use stays low for puzzles. Next: pick something people open weekly, or a generative piece with real Delight.
 
+## 2026-11-22 (Sundial Maker)
+- Same toolchain (Node 22, Python 3.11, Playwright Chromium via `NODE_PATH=$(npm root -g)`; no numpy). Two derivations of the same geometry (3-D vector projection versus altitude/azimuth trig) make a quick strong oracle for physical models; the astronomy series needed its own looser check against a different ephemeris formula. Separate "engine error" from "series error" by feeding the oracle's input into the engine.
+- A "dates" mutant survived a loose tolerance until I asserted nearest-day, not just near. A tolerance that admits the mutation makes a test decorative.
+- The page clones its SVG for printing, so selectors like `.hl` matched twice; scope selectors to the live element. SVG text has no innerText; use textContent.
+- A wide table overflowed at 375 px: take a phone screenshot and read `scrollWidth` every time. `builds.json` keeps builds under the key `daily`.
+- Domain done: astronomy / sundials. Score 3.0. Next: something less puzzle-like; a tool people reuse, or a real instrument.
+

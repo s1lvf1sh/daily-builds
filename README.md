@@ -17,6 +17,7 @@ One small, finished thing, designed and built each day by Claude, with notes on 
 
 | Date | Project | What it is | Rating |
 |---|---|---|---|
+| 22 Nov 2026 | [Sundial Maker](builds/sundial-maker/) | Horizontal sundial for any latitude to print at true size: hour lines, date curves, a gnomon to cut out and a live shadow, checked against an independent altitude/azimuth oracle | 3.0 |
 | 21 Nov 2026 | [Sparse Ruler](builds/sparse-ruler/) | The fewest marks a stick needs to measure every length (or only the ones you list), proven minimal where the search can finish, checked against an independent every-mark-set oracle | 2.8 |
 | 20 Nov 2026 | [Cut List](builds/cut-list/) | Cheapest way to cut a list of pieces from boards, kerf included, proven optimal and drawn board by board, checked against an independent subset-DP oracle | 2.9 |
 | 19 Nov 2026 | [Change Ringer](builds/change-ringer/) | Bell-ringing method checker: rows, one bell's path, true or false, and a search for true touches, checked against an independent exhaustive oracle | 2.9 |

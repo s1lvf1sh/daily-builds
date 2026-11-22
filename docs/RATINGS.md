@@ -35,6 +35,7 @@ No project is above 4.0. Nothing here has been used by anyone else, so Proof can
 | 2026-11-19 | Change Ringer | 2.5 | 3.5 | 3.5 | 3~ | 2 | 3 | **2.9** | 4.0 | medium |
 | 2026-11-20 | Cut List | 2.5 | 3.5 | 3.5 | 3~ | 3 | 2 | **2.9** | 4.0 | medium |
 | 2026-11-21 | Sparse Ruler | 2 | 3.5 | 3.5 | 3~ | 2 | 2.5 | **2.8** | 4.0 | medium |
+| 2026-11-22 | Sundial Maker | 2.5 | 3.5 | 3.5 | 3.5~ | 2.5 | 2.5 | **3.0** | 4.0 | medium |
 
 ## Notes behind each rating
 
@@ -170,3 +171,8 @@ Related: AI Project Rating Scale · AI Projects MOC · Memory
 **Scores:** Ambition 2 (a known problem, a branch-and-bound plus annealing fallback), Craft 3.5, Proof 3.5, Delight 3~ (screenshots only; click-to-edit was driven by script, not by hand), Use 2 (a puzzle and a rare marking job; the "list your lengths" mode is the practical part), Originality 2.5 (sparse rulers are classic; the subset-of-lengths mode with a live pair map is a modest addition). Mean 2.75, so 2.8 (cap 4.0).
 **Biggest gap:** nobody has used it, and minimality is only independently checked up to length 22 (complete) and 20 (subsets).
 
+### Sundial Maker: 3.0 (2026-11-22)
+**Verdict:** A correct, printable horizontal sundial generator with a live shadow and an honest watch correction; useful to a small audience who might really build one, and not new as an idea.
+**Evidence:** 3493 Node checks pass. An independent Python oracle using different formulas (closed-form hour angle; altitude and azimuth; Meeus solar position; minute-by-minute day length) agrees on 165 hour-line cases, 1,416 live nodus-shadow cases in both hemispheres (to 1e-6), 365 days of declination and equation of time (max 0.44 degrees, 0.79 min) and 117 day lengths (within 1.0 min given the oracle's declination). 10 of 10 engine mutants caught (the weakest by 2 checks), and a mutant engine fails the browser test. 24 checks in headless Chromium, including shadow tip on the hour line and 180 mm width in print media. Desktop and 375 px screenshots were read (a phone overflow was found and fixed). Proof is 3.5, not 4: the oracle shares my sign conventions and the astronomy series is only good to 0.44 degrees; nothing was printed or built.
+**Scores:** Ambition 2.5 (several subsystems: astronomy, 3-D projection, printable layout, clock maths), Craft 3.5, Proof 3.5, Delight 3.5~ (shadow moves with a slider and the plate looks like a real dial, judged from screenshots only), Use 2.5 (someone could build a garden sundial from it, but it is a once-per-person job), Originality 2.5 (sundial generators exist; the live shadow plus watch-correction row is a modest combination). Mean 3.0, cap 4.0.
+**Biggest gap:** nobody has printed it and built a dial to see whether it tells the time; the printed scale was only checked in emulated print media.
