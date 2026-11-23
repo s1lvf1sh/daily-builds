@@ -114,3 +114,10 @@
 
 ## 22 Nov 2026 (local session): what the first outside verdicts say
 The first person to run some of these gave Use 0 to 0.5 and Delight 0.5 to a tool for measuring with marked sticks and a sundial maker, but Delight 5 to an evolving tidepool and a god game. My provisional Delight (3 to 3.5, from screenshots) was far too high for niche tools. Favour something people can play with or explore over an exact solver for a narrow audience, and make the first ten seconds give a visitor something to do. Be sceptical of any Delight above 2.5 you cannot back with a person. Read `docs/FEEDBACK.md` for the policy; this is one voice, so don't over-fit.
+
+
+## 2026-11-23 (Harmonograph)
+- Same toolchain (Node 22, Python 3.11, Playwright Chromium via `NODE_PATH=$(npm root -g)`; no numpy). Integrating the governing ODE (RK4) in the test is a cheap independent oracle for a closed-form model. A known formula (Lissajous crossings 2ab-a-b) did not hold at every phase; I recorded that instead of tuning the test to pass.
+- Random generators must be checked against the codec that will re-read them (round-trip over many seeds found out-of-range pitches). Hand-written claims were wrong again (a "sharp" interval that was flat); derive claims from the engine.
+- A command with a stray `cat > file` and no heredoc waits on stdin and hangs for 2 minutes. `builds.json` is `{"earlier":[...],"daily":[...]}`; the build is appended to `daily`.
+- Domain done: harmonograph / Lissajous. Score 2.4 with Delight deliberately low (2~). Next: ask for a person's verdict via the page rather than guess; keep favouring things that act on their own.

@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Harmonograph</title>
+<style>
+:root{--bg:#fbf7ee;--ink:#1b2a3a;--mut:#6b7280;--card:#fffdf8;--line:#e3dccb;--acc:#b4472b}
+@media (prefers-color-scheme:dark){:root{--bg:#14181d;--ink:#e8e2d4;--mut:#9aa0a8;--card:#1b2026;--line:#2d343c;--acc:#e8825f}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:16px}
+h1{font-size:1.5rem;margin:.2em 0 0}
+.sub{color:var(--mut);margin:.2em 0 1em}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px}
+@media(max-width:760px){.layout{grid-template-columns:1fr}}
+canvas{width:100%;aspect-ratio:1;background:var(--card);border:1px solid var(--line);border-radius:8px;display:block;touch-action:none;cursor:crosshair}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px}
+.row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+button,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer;min-height:36px}
+button.primary{background:var(--acc);color:#fff;border-color:var(--acc)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+fieldset{border:1px solid var(--line);border-radius:6px;margin:0 0 8px;padding:6px 8px}
+legend{font-size:.85rem;color:var(--mut)}
+label{display:grid;grid-template-columns:70px 1fr 54px;align-items:center;gap:6px;font-size:.85rem}
+input[type=range]{width:100%}
+output{font-variant-numeric:tabular-nums;text-align:right;color:var(--mut)}
+#read{font-size:.95rem;min-height:2.6em}
+#hint{color:var(--mut);font-size:.85rem;margin:.5em 0 0}
+</style>
+</head>
+<body>
+<main>
+<h1>Harmonograph</h1>
+<p class="sub">Four swinging pendulums, two steering the pen left–right and two up–down, each slowly running out of swing. Press <b>Surprise me</b>, or drag on the paper.</p>
+<div class="layout">
+  <div>
+    <canvas id="c" width="900" height="900" aria-label="Harmonograph drawing"></canvas>
+    <p id="hint">Drag on the paper: left–right changes the horizontal pendulum's pitch, up–down the vertical one's.</p>
+  </div>
+  <div class="panel">
+    <div class="row">
+      <button class="primary" id="surprise">Surprise me</button>
+      <select id="preset" aria-label="Preset"></select>
+    </div>
+    <div class="row">
+      <button id="redraw">Redraw</button>
+      <button id="pause">Pause</button>
+      <button id="svg">Save SVG</button>
+      <button id="link">Copy link</button>
+    </div>
+    <div id="read" aria-live="polite"></div>
+    <div id="ctl"></div>
+    <label><span>Speed</span><input type="range" id="speed" min="1" max="12" value="4"><output id="speedv"></output></label>
+  </div>
+</div>
+</main>
+<script src="src/engine.js"></script>
+<script>
+(function () {
+  const H = window.Harmo, cv = document.getElementById('c'), cx = cv.getContext('2d');
+  const STEP = 0.005, TMAX = 60;
+  let pends = null, t = 0, last = null, paused = false, seed = 1, ext = 1;
+  const NAMES = ['Horizontal 1', 'Horizontal 2', 'Vertical 1', 'Vertical 2'];
+  const ctl = document.getElementById('ctl'), read = document.getElementById('read');
+  const colors = () => matchMedia('(prefers-color-scheme:dark)').matches ? { bg: '#1b2026', ink: '#f0d9a8' } : { bg: '#fffdf8', ink: '#1b2a3a' };
+
+  // Build controls once.
+  const inputs = [];
+  NAMES.forEach((n, i) => {
+    const fs = document.createElement('fieldset'), lg = document.createElement('legend'); lg.textContent = n; fs.appendChild(lg);
+    const defs = [['a', 'Swing', 0, 1, 0.01], ['f', 'Pitch (Hz)', 0.1, 8, 0.001], ['p', 'Phase (°)', 0, 360, 1], ['d', 'Fade', 0, 0.12, 0.001]];
+    inputs[i] = {};
+    defs.forEach(([k, lab, mn, mx, st]) => {
+      const l = document.createElement('label'), s = document.createElement('span'), r = document.createElement('input'), o = document.createElement('output');
+      s.textContent = lab; r.type = 'range'; r.min = mn; r.max = mx; r.step = st; r.setAttribute('aria-label', n + ' ' + lab);
+      r.addEventListener('input', () => { pends[i][k] = +r.value; o.textContent = (+r.value).toString(); restart(false); });
+      l.append(s, r, o); fs.appendChild(l); inputs[i][k] = { r, o };
+    });
+    ctl.appendChild(fs);
+  });
+  const presetSel = document.getElementById('preset');
+  presetSel.innerHTML = '<option value="">Presets…</option>' + H.PRESETS.map((p, i) => '<option value="' + i + '">' + p.name + '</option>').join('');
+
+  function sync() {
+    pends.forEach((q, i) => ['a', 'f', 'p', 'd'].forEach(k => {
+      const v = Math.min(+inputs[i][k].r.max, Math.max(+inputs[i][k].r.min, q[k]));
+      inputs[i][k].r.value = v; inputs[i][k].o.textContent = String(+q[k].toFixed(3));
+    }));
+  }
+  function describe() {
+    const xs = pends.filter(q => q.axis === 'x'), ys = pends.filter(q => q.axis === 'y');
+    const r = H.describeRatio(xs[0].f, ys[0].f), c = r.cents;
+    read.textContent = 'Main pair: ' + r.text + (Math.abs(c) < 0.05 ? ', exactly in tune (the shape closes)' : ', ' + Math.abs(c).toFixed(1) + ' cents ' + (c > 0 ? 'sharp' : 'flat') + (Math.abs(c) < 15 ? ' (the shape slowly turns)' : '')) + '.';
+  }
+  function clear() { const c = colors(); cx.fillStyle = c.bg; cx.fillRect(0, 0, cv.width, cv.height); }
+  function restart(updateUI) {
+    if (updateUI !== false) sync();
+    ext = H.extent(pends); t = 0; last = H.pointAt(pends, 0); clear(); describe(); paused = false; document.getElementById('pause').textContent = 'Pause';
+    writeHash();
+  }
+  function plot(p) { const s = 0.45 * cv.width / ext, c = cv.width / 2; return [c + p.x * s, c - p.y * s]; }
+  function frame() {
+    if (!paused && pends && t < TMAX) {
+      const n = +document.getElementById('speed').value * 8, c = colors();
+      cx.strokeStyle = c.ink; cx.lineWidth = 1.2; cx.lineJoin = cx.lineCap = 'round'; cx.globalAlpha = 0.9;
+      cx.beginPath(); const [sx, sy] = plot(last); cx.moveTo(sx, sy);
+      for (let i = 0; i < n && t < TMAX; i++) { t += STEP; last = H.pointAt(pends, t); const [x, y] = plot(last); cx.lineTo(x, y); }
+      cx.stroke(); cx.globalAlpha = 1;
+    }
+    requestAnimationFrame(frame);
+  }
+  function writeHash() { try { history.replaceState(null, '', '#' + H.encode(pends)); } catch (e) {} }
+  function load(p) { pends = p.map(q => Object.assign({}, q)); restart(); }
+
+  document.getElementById('surprise').onclick = () => { seed = (Date.now() % 100000) + 1; presetSel.value = ''; load(H.randomPends(seed)); };
+  presetSel.onchange = () => { if (presetSel.value !== '') load(H.PRESETS[+presetSel.value].pends); };
+  document.getElementById('redraw').onclick = () => restart(false);
+  document.getElementById('pause').onclick = e => { paused = !paused; e.target.textContent = paused ? 'Resume' : 'Pause'; };
+  const speed = document.getElementById('speed'), speedv = document.getElementById('speedv');
+  speed.oninput = () => speedv.textContent = speed.value + '×'; speedv.textContent = speed.value + '×';
+  document.getElementById('svg').onclick = () => {
+    const doc = H.svgDocument(H.sample(pends, TMAX, STEP), ext, 800);
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([doc], { type: 'image/svg+xml' })); a.download = 'harmonograph.svg';
+    document.body.appendChild(a); a.click(); a.remove();
+  };
+  document.getElementById('link').onclick = e => {
+    const u = location.href.split('#')[0] + '#' + H.encode(pends);
+    (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(() => e.target.textContent = 'Copied', () => { prompt('Copy this link', u); });
+    setTimeout(() => e.target.textContent = 'Copy link', 1500);
+  };
+  // Drag on the paper to re-pitch the two main pendulums.
+  let drag = null;
+  cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); drag = { x: e.clientX, y: e.clientY, fx: pends[0].f, fy: pends[2].f }; });
+  cv.addEventListener('pointermove', e => {
+    if (!drag) return; const w = cv.getBoundingClientRect().width;
+    pends[0].f = +Math.min(8, Math.max(0.1, drag.fx + (e.clientX - drag.x) / w * 2)).toFixed(3);
+    pends[2].f = +Math.min(8, Math.max(0.1, drag.fy - (e.clientY - drag.y) / w * 2)).toFixed(3);
+    restart(); TMAXdraw();
+  });
+  const endDrag = () => { drag = null; }; cv.addEventListener('pointerup', endDrag); cv.addEventListener('pointercancel', endDrag);
+  // While dragging, jump ahead so the new shape is visible immediately.
+  function TMAXdraw() {
+    const c = colors(); cx.strokeStyle = c.ink; cx.lineWidth = 1.2; cx.beginPath();
+    let [x, y] = plot(H.pointAt(pends, 0)); cx.moveTo(x, y);
+    for (let s = STEP; s <= 12; s += STEP) { [x, y] = plot(H.pointAt(pends, s)); cx.lineTo(x, y); }
+    cx.stroke(); t = 12; last = H.pointAt(pends, 12);
+  }
+
+  const fromHash = H.decode(location.hash.slice(1));
+  load(fromHash || H.randomPends(3));
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

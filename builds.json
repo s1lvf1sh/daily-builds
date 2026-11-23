@@ -202,6 +202,15 @@
       "url": "builds/sundial-maker/",
       "rating": 2.3,
       "status": "complete"
+    },
+    {
+      "title": "Harmonograph",
+      "slug": "harmonograph",
+      "date": "2026-11-23",
+      "blurb": "Four fading pendulums draw a curve that starts on its own: drag to re-pitch, press Surprise me, name the musical interval hiding in each shape, export SVG or share a link; checked against an independent RK4 integration.",
+      "url": "builds/harmonograph/",
+      "rating": 2.4,
+      "status": "complete"
     }
   ]
 }
