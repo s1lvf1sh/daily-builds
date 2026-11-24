@@ -121,3 +121,10 @@ The first person to run some of these gave Use 0 to 0.5 and Delight 0.5 to a too
 - Random generators must be checked against the codec that will re-read them (round-trip over many seeds found out-of-range pitches). Hand-written claims were wrong again (a "sharp" interval that was flat); derive claims from the engine.
 - A command with a stray `cat > file` and no heredoc waits on stdin and hangs for 2 minutes. `builds.json` is `{"earlier":[...],"daily":[...]}`; the build is appended to `daily`.
 - Domain done: harmonograph / Lissajous. Score 2.4 with Delight deliberately low (2~). Next: ask for a person's verdict via the page rather than guess; keep favouring things that act on their own.
+
+
+## 2026-11-24 (Tile Shifter)
+- Same toolchain (Node 22, Python 3.11, Playwright Chromium; no numpy). ESM test scripts cannot see `NODE_PATH`; load Playwright with `createRequire(import.meta.url)('playwright')`. `builds.json` keeps builds under `daily`.
+- A second inside-test (winding number) beside the engine's crossing parity is a cheap geometry oracle. A pixel test in the real canvas (no transparent pixels) catches gaps but not small overlaps; keep the geometric test too.
+- My first "illegal" example was legal; I assumed instead of deriving. Also check that a mutation actually applied (a missing pattern looked like a survivor), and note equivalent mutants honestly.
+- Domain done: tessellation / Escher-style tiles. Score 2.8 with Delight kept at 2.5~. Next: ask a person; or something with state that grows over days.

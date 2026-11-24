@@ -37,6 +37,7 @@ No project is above 4.0. Nothing here has been used by anyone else, so Proof can
 | 2026-11-21 | Sparse Ruler | 2 | 3.5 | 3.5 | 3~ | 2 | 2.5 | **2.8** | 4.0 | medium |
 | 2026-11-22 | Sundial Maker | 2.5 | 3.5 | 3.5 | 3.5~ | 2.5 | 2.5 | **3.0** | 4.0 | medium |
 | 2026-11-23 | Harmonograph | 2 | 3.5 | 3.5 | 2~ | 1.5 | 2 | **2.4** | 4.0 | medium |
+| 2026-11-24 | Tile Shifter | 2.5 | 3.5 | 3.5 | 2.5~ | 2 | 2.5 | **2.8** | 4.0 | medium |
 
 ## Notes behind each rating
 
@@ -177,6 +178,12 @@ Related: AI Project Rating Scale · AI Projects MOC · Memory
 **Evidence:** 3493 Node checks pass. An independent Python oracle using different formulas (closed-form hour angle; altitude and azimuth; Meeus solar position; minute-by-minute day length) agrees on 165 hour-line cases, 1,416 live nodus-shadow cases in both hemispheres (to 1e-6), 365 days of declination and equation of time (max 0.44 degrees, 0.79 min) and 117 day lengths (within 1.0 min given the oracle's declination). 10 of 10 engine mutants caught (the weakest by 2 checks), and a mutant engine fails the browser test. 24 checks in headless Chromium, including shadow tip on the hour line and 180 mm width in print media. Desktop and 375 px screenshots were read (a phone overflow was found and fixed). Proof is 3.5, not 4: the oracle shares my sign conventions and the astronomy series is only good to 0.44 degrees; nothing was printed or built.
 **Scores:** Ambition 2.5 (several subsystems: astronomy, 3-D projection, printable layout, clock maths), Craft 3.5, Proof 3.5, Delight 3.5~ (shadow moves with a slider and the plate looks like a real dial, judged from screenshots only), Use 2.5 (someone could build a garden sundial from it, but it is a once-per-person job), Originality 2.5 (sundial generators exist; the live shadow plus watch-correction row is a modest combination). Mean 3.0, cap 4.0.
 **Biggest gap:** nobody has printed it and built a dial to see whether it tells the time; the printed scale was only checked in emulated print media.
+
+### Tile Shifter: 2.8 (2026-11-24)
+**Verdict:** A small, correct tessellation toy you can drag at once, with a printable outline; probably more fun for a minute than my solvers, but it is a known genre and nobody has tried it.
+**Evidence:** 11 Node tests pass. For 64 random tiles (hexagon and parallelogram, 1 to 4 dots per edge) 9,600 random points were each covered by exactly one lattice copy, using a winding-number test that shares no code with the engine's crossing-parity test; shoelace area equals the lattice cell, Monte Carlo agrees to 1%, seams match point for point. 10 of 11 engine mutants were caught; the survivor is an equivalent mutant (a redundant area check). In headless Chromium, 12 shuffled tilings had no unpainted pixel, a real mouse drag and a wild drag kept the tiling, the share link reopened the same tile, breathing kept it exact over 5 samples, and there was no overflow at 375 px. Desktop and phone screenshots were read. Proof is 3.5, not 4: the oracle checks my outlines, not an external tiling, and the pixel test cannot see small overlaps.
+**Scores:** Ambition 2.5 (geometry, curve flattening, legality, editor and exports), Craft 3.5, Proof 3.5, Delight 2.5~ (capped by the outside verdicts' lesson: drag-and-watch should be pleasant, but I judged it from screenshots only), Use 2 (a craft outline and a classroom demo; a plaything), Originality 2.5 (Escher-style editors exist; the live legality guard and breathing mode are small additions). Mean 2.75, shown as 2.8; cap 4.0.
+**Biggest gap:** no person has tried it, so Delight and Use are guesses; the downloaded SVG was never printed or cut.
 
 ### Harmonograph: 2.4 (2026-11-23)
 **Verdict:** A small self-drawing toy with a correct model and an interval read-out; it should be more immediately pleasant than my earlier solvers, but it is a known genre and I cannot judge Delight.

@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tile Shifter</title>
+<meta name="description" content="Drag one edge of a tile and its twin edge moves too, so the whole plane stays tiled.">
+<style>
+:root{--bg:#f6f1e7;--ink:#241f1a;--mute:#6e665c;--card:#fffaf0;--line:#d9cfbd;--acc:#c2410c;--bad:#b91c1c}
+@media (prefers-color-scheme:dark){:root{--bg:#17140f;--ink:#f1e9d8;--mute:#a79d8a;--card:#211d16;--line:#3a3328;--acc:#fb923c;--bad:#f87171}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,sans-serif}
+header{padding:16px 16px 4px;max-width:1100px;margin:auto}
+h1{font-size:1.5rem;margin:0}
+header p{margin:.2rem 0 0;color:var(--mute)}
+main{max-width:1100px;margin:auto;padding:8px 16px 32px;display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:16px}
+@media (max-width:760px){main{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0}
+canvas{display:block;width:100%;border-radius:8px;touch-action:none}
+#edit{aspect-ratio:1/1;background:var(--bg);cursor:grab}
+#view{aspect-ratio:4/3;background:var(--bg)}
+.row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+label{font-size:.85rem;color:var(--mute);display:flex;gap:6px;align-items:center}
+select,button,input[type=range]{font:inherit}
+button,select{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
+button.primary{background:var(--acc);color:#fff;border-color:var(--acc)}
+button:focus-visible,select:focus-visible,input:focus-visible,canvas:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+#status{margin:8px 0 0;font-size:.85rem;min-height:1.3em;color:var(--mute)}
+#status.bad{color:var(--bad);font-weight:600}
+small{color:var(--mute)}
+details{margin-top:10px;color:var(--mute);font-size:.85rem}
+</style>
+</head>
+<body>
+<header>
+<h1>Tile Shifter</h1>
+<p>Drag a dot on the tile. Its twin edge moves with it, so the shapes still fit together with no gaps.</p>
+</header>
+<main>
+<section class="card" aria-label="Tile editor">
+<canvas id="edit" width="640" height="640" tabindex="0" aria-label="The tile. Drag the dots to reshape it."></canvas>
+<div class="row">
+<button class="primary" id="shuffle">Shuffle</button>
+<button id="reset">Plain tile</button>
+<label>Shape <select id="kind"><option value="hex">Hexagon</option><option value="para">Parallelogram</option></select></label>
+</div>
+<div class="row">
+<label>Dots per edge <input type="range" id="k" min="1" max="4" value="3"></label>
+<label>Skew <input type="range" id="skew" min="-0.5" max="0.5" step="0.01" value="0"></label>
+<label>Height <input type="range" id="height" min="0.6" max="1.5" step="0.01" value="1"></label>
+</div>
+<div class="row">
+<label><input type="checkbox" id="breathe"> Breathe</label>
+<label><input type="checkbox" id="outline" checked> Outlines</label>
+<label>Colours <select id="pal"><option value="0">Warm</option><option value="1">Cool</option><option value="2">Ink</option></select></label>
+</div>
+<p id="status" role="status" aria-live="polite"></p>
+</section>
+<section class="card" aria-label="The tiling">
+<canvas id="view" width="960" height="720" aria-label="The plane tiled with copies of your tile"></canvas>
+<div class="row">
+<button id="svgTile">Download tile (SVG)</button>
+<button id="svgSheet">Download sheet (SVG)</button>
+<button id="share">Copy link</button>
+</div>
+<details><summary>How can that be true?</summary>
+<p>A tile whose opposite sides are the same curve, one shifted along from the other, fits against its own copies. A bump you add to one side is a dent on the neighbour's matching side. The page checks that the outline never crosses itself and that its area equals one cell of the grid; if you drag into a bad shape it tells you and keeps the last good one.</p>
+</details>
+</section>
+</main>
+<script type="module">
+import * as T from './src/tile.js';
+const $ = (id) => document.getElementById(id);
+const PALS = [['#e76f51', '#f4a261', '#e9c46a', '#f6bd60', '#d62828'], ['#264653', '#2a9d8f', '#8ab17d', '#4895ef', '#5e60ce'], ['#1b1b1b', '#6b6b6b', '#c9c1b0', '#8c2f1b', '#3d405b']];
+const cfg = () => ({ kind: $('kind').value, k: +$('k').value, skew: +$('skew').value, height: +$('height').value });
+let state, seed = (Math.random() * 1e6) | 0, tile, drag = null, dirty = true, t0 = performance.now();
+
+function setStatus(msg, bad) { const s = $('status'); s.textContent = msg; s.className = bad ? 'bad' : ''; }
+function rebuild(s) { const t = T.buildTile(s); return { t, v: T.validate(t) }; }
+function newShuffle() {
+  const c = cfg(); seed = (seed * 1103515245 + 12345) >>> 0;
+  const r = T.shuffle(seed, c.kind, c.k, 0.3, c.skew, c.height); state = r.state; setStatus('A fresh shape. Drag any dot, or press Shuffle again.'); sync();
+}
+function sync() { const r = rebuild(state); tile = r.t; hashSet(); dirty = true; }
+function hashSet() { try { history.replaceState(null, '', '#' + T.encodeState(state)); } catch {} }
+
+// ---- drawing ----
+const edit = $('edit'), view = $('view'), ex = edit.getContext('2d'), vx = view.getContext('2d');
+function bounds(t) { const xs = t.outline.map((p) => p[0]), ys = t.outline.map((p) => p[1]); return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)]; }
+function editMap(t) {
+  const [x0, y0, x1, y1] = bounds(t), w = x1 - x0, h = y1 - y0, W = edit.width, pad = 70;
+  const s = (W - 2 * pad) / Math.max(w, h);
+  return { s, ox: pad - x0 * s + (W - 2 * pad - w * s) / 2, oy: pad - y0 * s + (W - 2 * pad - h * s) / 2 };
+}
+const toScr = (m, p) => [p[0] * m.s + m.ox, p[1] * m.s + m.oy];
+function pathOf(ctx, pts, m) { ctx.beginPath(); pts.forEach((p, i) => { const q = toScr(m, p); i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]); }); ctx.closePath(); }
+function css(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+
+function drawEdit() {
+  const t = tile, m = editMap(t), W = edit.width;
+  ex.clearRect(0, 0, W, W);
+  // ghost neighbours for context
+  ex.save(); ex.globalAlpha = 0.18;
+  for (const q of T.translatesFor(t, [-5, -5, 5, 5], 0)) {
+    if (!q.i && !q.j) continue; if (Math.abs(q.i) > 1 || Math.abs(q.j) > 1) continue;
+    pathOf(ex, t.outline.map((p) => [p[0] + q.x, p[1] + q.y]), m); ex.fillStyle = css('--acc'); ex.fill();
+  }
+  ex.restore();
+  pathOf(ex, t.outline, m);
+  ex.fillStyle = PALS[+$('pal').value][0]; ex.globalAlpha = 0.85; ex.fill(); ex.globalAlpha = 1;
+  ex.lineWidth = 3; ex.strokeStyle = css('--ink'); ex.stroke();
+  // handles: the independent sides are 0..pairs-1; twins are drawn hollow
+  for (let i = 0; i < t.n; i++) {
+    const ind = i < t.pairs, side = t.sides[i];
+    const pts = ind ? side.slice(1, -1) : side.slice(1, -1);
+    pts.forEach((p) => { const q = toScr(m, p); ex.beginPath(); ex.arc(q[0], q[1], ind ? 11 : 7, 0, 7); ex.fillStyle = ind ? css('--card') : 'transparent'; ex.fill(); ex.lineWidth = 3; ex.strokeStyle = ind ? css('--acc') : css('--mute'); ex.stroke(); });
+  }
+}
+function drawView() {
+  const t = tile, W = view.width, H = view.height;
+  vx.clearRect(0, 0, W, H);
+  const unit = Math.min(W, H) / 4.2; // pixels per tile-space unit
+  const box = [-W / 2 / unit, -H / 2 / unit, W / 2 / unit, H / 2 / unit];
+  const pal = PALS[+$('pal').value], [x0, y0, x1, y1] = bounds(t);
+  const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+  vx.save(); vx.translate(W / 2 - cx * unit, H / 2 - cy * unit); vx.scale(unit, unit);
+  const inv = [box[0] + cx, box[1] + cy, box[2] + cx, box[3] + cy];
+  const p2 = new Path2D(); t.outline.forEach((p, i) => (i ? p2.lineTo(p[0], p[1]) : p2.moveTo(p[0], p[1]))); p2.closePath();
+  vx.lineJoin = 'round'; vx.lineWidth = 0.018;
+  for (const q of T.translatesFor(t, inv, 1)) {
+    vx.save(); vx.translate(q.x, q.y);
+    vx.fillStyle = pal[T.colourIndex(q.i, q.j, 3)]; vx.fill(p2);
+    if ($('outline').checked) { vx.strokeStyle = css('--ink'); vx.stroke(p2); }
+    vx.restore();
+  }
+  vx.restore();
+}
+
+// ---- interaction ----
+function pointerPos(e, c) { const r = c.getBoundingClientRect(); return [((e.clientX - r.left) / r.width) * c.width, ((e.clientY - r.top) / r.height) * c.height]; }
+function handles() { // independent control points with their screen position
+  const m = editMap(tile), out = [];
+  for (let i = 0; i < tile.pairs; i++) tile.sides[i].slice(1, -1).forEach((p, j) => out.push({ i, j, scr: toScr(m, p) }));
+  return out;
+}
+edit.addEventListener('pointerdown', (e) => {
+  const [x, y] = pointerPos(e, edit); let best = null, bd = 28 * 28;
+  for (const h of handles()) { const d = (h.scr[0] - x) ** 2 + (h.scr[1] - y) ** 2; if (d < bd) { bd = d; best = h; } }
+  if (best) { drag = best; edit.setPointerCapture(e.pointerId); edit.style.cursor = 'grabbing'; }
+});
+edit.addEventListener('pointermove', (e) => {
+  if (!drag) return;
+  const m = editMap(tile), [x, y] = pointerPos(e, edit);
+  const wx = (x - m.ox) / m.s, wy = (y - m.oy) / m.s;
+  const S = tile.sides[drag.i][0], E = tile.sides[drag.i][tile.sides[drag.i].length - 1];
+  const dx = E[0] - S[0], dy = E[1] - S[1], L2 = dx * dx + dy * dy;
+  const u = ((wx - S[0]) * dx + (wy - S[1]) * dy) / L2, v = (-(wx - S[0]) * dy + (wy - S[1]) * dx) / L2;
+  const next = JSON.parse(JSON.stringify(state)); next.edges[drag.i][drag.j] = [u, v];
+  const r = rebuild(next);
+  if (r.v.ok) { state = next; tile = r.t; dirty = true; setStatus('Still a perfect tiling: area ' + r.v.area.toFixed(3) + ' equals one cell ' + r.v.cell.toFixed(3) + '.'); }
+  else setStatus('That dot would make the outline cross itself, so it stays where it was.', true);
+});
+const end = () => { if (drag) { drag = null; edit.style.cursor = 'grab'; hashSet(); } };
+edit.addEventListener('pointerup', end); edit.addEventListener('pointercancel', end);
+
+for (const id of ['kind', 'k']) $(id).addEventListener('change', newShuffle);
+for (const id of ['skew', 'height']) $(id).addEventListener('input', () => {
+  // keep the dots, change the grid; fall back to a shuffle if the shape becomes illegal
+  const next = { ...state, skew: +$('skew').value, height: +$('height').value };
+  const r = rebuild(next);
+  if (r.v.ok) { state = next; sync(); setStatus(''); } else { newShuffle(); }
+});
+for (const id of ['pal', 'outline']) $(id).addEventListener('change', () => { dirty = true; });
+$('shuffle').addEventListener('click', newShuffle);
+$('reset').addEventListener('click', () => { state = { ...state, edges: state.edges.map(() => Array.from({ length: +$('k').value }, (_, j) => [(j + 1) / (+$('k').value + 1), 0])) }; sync(); setStatus('The plain tile: a straight-edged ' + (state.kind === 'hex' ? 'hexagon' : 'parallelogram') + '.'); });
+$('breathe').addEventListener('change', () => { dirty = true; });
+
+function download(name, text) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'image/svg+xml' })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); }
+$('svgTile').addEventListener('click', () => download('tile.svg', T.tileSVG(tile)));
+$('svgSheet').addEventListener('click', () => download('tiling.svg', T.toSVG(tile, { palette: PALS[+$('pal').value].slice(0, 3) })));
+$('share').addEventListener('click', async () => { try { await navigator.clipboard.writeText(location.href); setStatus('Link copied. It holds your exact tile.'); } catch { setStatus('Copy the address bar: it holds your exact tile.'); } });
+window.addEventListener('hashchange', () => { const s = T.decodeState(location.hash.slice(1)); if (s && T.validate(T.buildTile(s)).ok) { state = s; applyControls(); tile = T.buildTile(state); dirty = true; } });
+function applyControls() { $('kind').value = state.kind; $('skew').value = state.skew; $('height').value = state.height; if (state.edges[0].length) $('k').value = state.edges[0].length; }
+
+// ---- start ----
+const fromHash = T.decodeState(location.hash.slice(1));
+if (fromHash && T.validate(T.buildTile(fromHash)).ok) { state = fromHash; applyControls(); sync(); }
+else newShuffle();
+
+// The breathing animation moves every dot gently around its place; the twin edges follow,
+// and any frame that would be illegal is skipped, so the tiling never breaks.
+function frame(now) {
+  let toDraw = tile;
+  if ($('breathe').checked && !drag) {
+    const t = (now - t0) / 1000, s = JSON.parse(JSON.stringify(state));
+    s.edges.forEach((e, i) => e.forEach((p, j) => { p[1] += 0.05 * Math.sin(t * 0.9 + i * 2.1 + j * 1.3); p[0] += 0.012 * Math.cos(t * 0.7 + j); }));
+    const r = rebuild(s); if (r.v.ok) { toDraw = r.t; }
+  }
+  if (dirty || $('breathe').checked) { const keep = tile; tile = toDraw; drawEdit(); drawView(); tile = keep; dirty = false; }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+window.__tile = { get state() { return state; }, get tile() { return tile; } };
+</script>
+</body>
+</html>

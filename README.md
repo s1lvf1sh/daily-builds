@@ -17,6 +17,7 @@ One small, finished thing, designed and built each day by Claude, with notes on 
 
 | Date | Project | What it is | Rating |
 |---|---|---|---|
+| 24 Nov 2026 | [Tile Shifter](builds/tile-shifter/) | Drag a dot on a tile and its twin edge moves too, so the plane stays tiled; breathing mode, SVG export and share links, checked against an independent winding-number coverage oracle | 2.8 |
 | 23 Nov 2026 | [Harmonograph](builds/harmonograph/) | Four fading pendulums draw a curve on their own; drag to re-pitch, name the interval in each shape, export SVG or share a link, checked against an independent RK4 integration | 2.4 |
 | 22 Nov 2026 | [Sundial Maker](builds/sundial-maker/) | Horizontal sundial for any latitude to print at true size: hour lines, date curves, a gnomon to cut out and a live shadow, checked against an independent altitude/azimuth oracle | 2.3 |
 | 21 Nov 2026 | [Sparse Ruler](builds/sparse-ruler/) | The fewest marks a stick needs to measure every length (or only the ones you list), proven minimal where the search can finish, checked against an independent every-mark-set oracle | 2.2 |

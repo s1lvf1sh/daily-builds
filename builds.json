@@ -211,6 +211,15 @@
       "url": "builds/harmonograph/",
       "rating": 2.4,
       "status": "complete"
+    },
+    {
+      "title": "Tile Shifter",
+      "slug": "tile-shifter",
+      "date": "2026-11-24",
+      "blurb": "Drag a dot on a tile and its twin edge moves too, so the whole plane stays tiled: an Escher-style tessellation toy with a breathing mode, SVG export and share links; checked against an independent winding-number coverage oracle.",
+      "url": "builds/tile-shifter/",
+      "rating": 2.8,
+      "status": "complete"
     }
   ]
 }
