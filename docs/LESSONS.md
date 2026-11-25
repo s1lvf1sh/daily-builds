@@ -128,3 +128,10 @@ The first person to run some of these gave Use 0 to 0.5 and Delight 0.5 to a too
 - A second inside-test (winding number) beside the engine's crossing parity is a cheap geometry oracle. A pixel test in the real canvas (no transparent pixels) catches gaps but not small overlaps; keep the geometric test too.
 - My first "illegal" example was legal; I assumed instead of deriving. Also check that a mutation actually applied (a missing pattern looked like a survivor), and note equivalent mutants honestly.
 - Domain done: tessellation / Escher-style tiles. Score 2.8 with Delight kept at 2.5~. Next: ask a person; or something with state that grows over days.
+
+
+## 2026-11-25 (Ripple Tank)
+- Same toolchain (Node 22, Python 3.11, Playwright Chromium via `NODE_PATH=$(npm root -g)`; no numpy). Wave-equation tests need care about what the oracle really says: a narrow strip with side walls is a waveguide (longer guide wavelength), an edge sponge in a thin strip kills everything, and a fixed wall inverts the echo (look for the trough). My first four wave tests failed for those test-design reasons, not engine bugs.
+- Wavelengths under about 8 cells show numerical dispersion and checkerboards at material interfaces; pick frequencies giving 14+ cells per wavelength for checks and presets.
+- A mutant that no oracle can see (slit width) is a blind spot to record, not hide. Write the mutation script once in the scratchpad (copy src, sed, run tests) and reuse it.
+- Domain done: wave physics / ripple tank. Score 2.7 with Delight 2.5~. Next: ask a person, or something that grows over days.

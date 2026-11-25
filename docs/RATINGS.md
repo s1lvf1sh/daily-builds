@@ -38,6 +38,7 @@ No project is above 4.0. Nothing here has been used by anyone else, so Proof can
 | 2026-11-22 | Sundial Maker | 2.5 | 3.5 | 3.5 | 3.5~ | 2.5 | 2.5 | **3.0** | 4.0 | medium |
 | 2026-11-23 | Harmonograph | 2 | 3.5 | 3.5 | 2~ | 1.5 | 2 | **2.4** | 4.0 | medium |
 | 2026-11-24 | Tile Shifter | 2.5 | 3.5 | 3.5 | 2.5~ | 2 | 2.5 | **2.8** | 4.0 | medium |
+| 2026-11-25 | Ripple Tank | 2.5 | 3.5 | 3.5 | 2.5~ | 2 | 2 | **2.7** | 4.0 | medium |
 
 ## Notes behind each rating
 
@@ -178,6 +179,12 @@ Related: AI Project Rating Scale · AI Projects MOC · Memory
 **Evidence:** 3493 Node checks pass. An independent Python oracle using different formulas (closed-form hour angle; altitude and azimuth; Meeus solar position; minute-by-minute day length) agrees on 165 hour-line cases, 1,416 live nodus-shadow cases in both hemispheres (to 1e-6), 365 days of declination and equation of time (max 0.44 degrees, 0.79 min) and 117 day lengths (within 1.0 min given the oracle's declination). 10 of 10 engine mutants caught (the weakest by 2 checks), and a mutant engine fails the browser test. 24 checks in headless Chromium, including shadow tip on the hour line and 180 mm width in print media. Desktop and 375 px screenshots were read (a phone overflow was found and fixed). Proof is 3.5, not 4: the oracle shares my sign conventions and the astronomy series is only good to 0.44 degrees; nothing was printed or built.
 **Scores:** Ambition 2.5 (several subsystems: astronomy, 3-D projection, printable layout, clock maths), Craft 3.5, Proof 3.5, Delight 3.5~ (shadow moves with a slider and the plate looks like a real dial, judged from screenshots only), Use 2.5 (someone could build a garden sundial from it, but it is a once-per-person job), Originality 2.5 (sundial generators exist; the live shadow plus watch-correction row is a modest combination). Mean 3.0, cap 4.0.
 **Biggest gap:** nobody has printed it and built a dial to see whether it tells the time; the printed scale was only checked in emulated print media.
+
+### Ripple Tank: 2.7 (2026-11-25)
+**Verdict:** A correct, poke-able wave tank whose first ten seconds (rain, tap, draw) should be more inviting than my solvers; it is a known genre of physics toy and no person has tried it.
+**Evidence:** 9 Node tests pass. Four standing modes match the continuum period within 1.2%; a ring front is at c*t within 4 cells; a wall echo sits where the mirror image says; shallow-water wavelength ratio is 0.6 within 0.015; double-slit fringe spacing agrees with a direct two-source sum within 2.5 cells and with lambda*L/d within 15%; undamped energy drifts under 0.1%; 12 random scenes stay finite. 8 of 9 engine mutants were caught; the survivor (a slit one cell wider) is a real blind spot, since no test checks the diffraction envelope. Headless Chromium drove clicks, drags, all tools, all six scenes, deep links, PNG download, keyboard and a 375 px phone view with no console errors; desktop, scene and phone screenshots were read. Proof is 3.5, not 4: the oracles check the physics in simple geometries only, and the lens and shelf scenes have no external formula check.
+**Scores:** Ambition 2.5 (a PDE solver with variable speed, absorbing edges, tools and scenes), Craft 3.5, Proof 3.5, Delight 2.5~ (kept low on purpose after the outside verdicts; judged from screenshots only), Use 2 (a physics demo for a teacher or curious person, not something to return to), Originality 2 (ripple tanks are a classic; the draw-your-own-walls scene set is a small variation). Mean 2.67, shown as 2.7; cap 4.0.
+**Biggest gap:** no person has tried it, so Delight and Use are guesses; the lens and shelf scenes were only checked by eye and by a straight-strip wavelength law, and variable-speed regions use a non-energy-conserving form of the equation.
 
 ### Tile Shifter: 2.8 (2026-11-24)
 **Verdict:** A small, correct tessellation toy you can drag at once, with a printable outline; probably more fun for a minute than my solvers, but it is a known genre and nobody has tried it.

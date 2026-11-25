@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ripple Tank</title>
+<meta name="description" content="A tank of water you can poke: drop stones, draw walls and shallow patches, and watch waves reflect, bend and interfere.">
+<style>
+:root{--bg:#eef3f4;--ink:#10252b;--mute:#58707a;--card:#fbfdfd;--line:#cddadd;--acc:#0e7490;--on:#fff}
+@media (prefers-color-scheme:dark){:root{--bg:#0b1519;--ink:#e3f0f3;--mute:#8aa6af;--card:#122026;--line:#25404a;--acc:#22d3ee;--on:#06232b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,sans-serif}
+header{padding:16px 16px 4px;max-width:1100px;margin:auto}
+h1{font-size:1.5rem;margin:0}
+header p{margin:.2rem 0 0;color:var(--mute)}
+main{max-width:1100px;margin:auto;padding:8px 16px 32px;display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0}
+#tank{display:block;width:100%;aspect-ratio:3/2;border-radius:8px;touch-action:none;cursor:crosshair;image-rendering:auto;background:#06303b}
+#scope{display:block;width:100%;height:70px;border-radius:8px;background:#06303b}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.row:first-child{margin-top:0}
+label{font-size:.85rem;color:var(--mute);display:flex;gap:6px;align-items:center}
+button,select{font:inherit;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer}
+button[aria-pressed=true]{background:var(--acc);color:var(--on);border-color:var(--acc)}
+button:focus-visible,select:focus-visible,input:focus-visible,canvas:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+input[type=range]{width:110px}
+#hint{margin:8px 0 0;font-size:.9rem;color:var(--mute);min-height:2.6em}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+small{color:var(--mute)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Ripple Tank</h1>
+  <p>A tank of water to poke. Tap to drop a stone, then draw walls and shallow patches and watch the waves bounce, bend and interfere.</p>
+</header>
+<main>
+  <section class="card">
+    <canvas id="tank" width="240" height="160" tabindex="0" aria-label="Water tank. Pointer actions depend on the selected tool."></canvas>
+    <p id="hint" aria-live="polite">The rain stops as soon as you touch the water.</p>
+    <div class="row" role="group" aria-label="Tool">
+      <span class="seg">
+        <button type="button" data-tool="stone" aria-pressed="true">Stone</button>
+        <button type="button" data-tool="wall" aria-pressed="false">Wall</button>
+        <button type="button" data-tool="shallow" aria-pressed="false">Shallow</button>
+        <button type="button" data-tool="source" aria-pressed="false">Wave maker</button>
+        <button type="button" data-tool="probe" aria-pressed="false">Probe</button>
+        <button type="button" data-tool="erase" aria-pressed="false">Erase</button>
+      </span>
+      <label>Brush <input id="brush" type="range" min="1" max="9" value="3"></label>
+      <label>Wave maker pitch <input id="freq" type="range" min="2" max="9" value="5"></label>
+    </div>
+    <div class="row">
+      <label>Scene <select id="preset"></select></label>
+      <button type="button" id="play" aria-pressed="false">Pause</button>
+      <label>Speed <input id="speed" type="range" min="1" max="6" value="3"></label>
+      <button type="button" id="calm">Calm the water</button>
+      <button type="button" id="reset">Reset scene</button>
+      <button type="button" id="snap">Save picture</button>
+    </div>
+  </section>
+  <section class="card">
+    <canvas id="scope" width="600" height="70" aria-label="Height of the water at the probe over the last few seconds"></canvas>
+    <small id="scopeNote">Choose Probe and tap the water to watch one spot bob up and down.</small>
+  </section>
+</main>
+<script type="module">
+import * as W from './src/wave.mjs';
+const GW = 240, GH = 160;
+const tank = W.createTank(GW, GH);
+const cv = document.getElementById('tank'), ctx = cv.getContext('2d');
+const img = ctx.createImageData(GW, GH), px = new Uint32Array(img.data.buffer);
+const scope = document.getElementById('scope'), sctx = scope.getContext('2d');
+const $ = (id) => document.getElementById(id);
+let tool = 'stone', paused = false, rain = true, probe = null, trace = [], gain = 2.5, presetKey = 'open';
+window.__tank = tank; window.__W = W;
+
+for (const [k, v] of Object.entries(W.PRESETS)) { const o = document.createElement('option'); o.value = k; o.textContent = v.label; $('preset').append(o); }
+const hints = {
+  open: 'Tap the water. Rings spread, get weaker, and fade at the edges (they are absorbed there).',
+  double: 'Plane waves hit two slits. Behind them the rings overlap: bright and dark bands fan out (Young\'s double slit). Try Wave maker pitch.',
+  single: 'One slit: the wave spreads out behind it. A narrower slit spreads it more.',
+  lens: 'The pale lens-shaped patch is shallow, so waves slow down in it and bend toward a focus.',
+  shelf: 'Waves cross onto a shallow shelf: slower, so shorter wavelength and a bent direction.',
+  box: 'A closed box: stone ripples echo around and settle into patterns. Wall reflections flip the sign of a wave.',
+};
+function setPreset(key, keepRain) {
+  if (!W.PRESETS[key]) key = 'open';
+  presetKey = key; $('preset').value = key; W.loadPreset(tank, key); trace = []; probe = null;
+  $('hint').textContent = hints[key] || '';
+  if (!keepRain) rain = false;
+}
+setPreset((location.hash.slice(1) || 'open'), true);
+if (presetKey !== 'open') rain = false;
+$('preset').onchange = () => { setPreset($('preset').value); location.hash = presetKey; };
+
+// ---- input
+const toGrid = (e) => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * GW, (e.clientY - r.top) / r.height * GH]; };
+let down = false, last = null;
+const brush = () => +$('brush').value;
+function act(e, first) {
+  const [x, y] = toGrid(e); rain = false;
+  const clampPt = (v, hi) => Math.max(2, Math.min(hi - 3, v));
+  const cx = clampPt(x, GW), cy = clampPt(y, GH);
+  if (tool === 'stone') { if (first) W.drop(tank, cx, cy, 2 + brush() * 0.6, 1.2); }
+  else if (tool === 'wall') W.paint(tank, cx, cy, brush() * 0.7 + 0.5, W.WALL);
+  else if (tool === 'shallow') W.paint(tank, cx, cy, brush() * 0.9 + 0.5, W.SHALLOW);
+  else if (tool === 'erase') { W.paint(tank, cx, cy, brush() * 0.9 + 0.5, W.WATER); tank.sources = tank.sources.filter(s => Math.hypot(s.x - cx, s.y - cy) > brush() + 3); }
+  else if (tool === 'source') { if (first) { W.addSource(tank, cx, cy, +$('freq').value / 100, 1); } }
+  else if (tool === 'probe') { if (first) { probe = [Math.round(cx), Math.round(cy)]; trace = []; } }
+}
+cv.addEventListener('pointerdown', (e) => { cv.setPointerCapture(e.pointerId); down = true; act(e, true); });
+cv.addEventListener('pointermove', (e) => { if (down && (tool === 'wall' || tool === 'shallow' || tool === 'erase')) act(e, false); });
+cv.addEventListener('pointerup', () => { down = false; });
+cv.addEventListener('pointercancel', () => { down = false; });
+for (const b of document.querySelectorAll('[data-tool]')) b.onclick = () => { tool = b.dataset.tool; document.querySelectorAll('[data-tool]').forEach(x => x.setAttribute('aria-pressed', x === b)); };
+$('play').onclick = () => { paused = !paused; $('play').textContent = paused ? 'Play' : 'Pause'; $('play').setAttribute('aria-pressed', paused); };
+$('calm').onclick = () => { tank.u.fill(0); tank.prev.fill(0); tank.sources.length = 0; };
+$('reset').onclick = () => setPreset(presetKey, false);
+$('snap').onclick = () => { const a = document.createElement('a'); a.download = 'ripple-tank.png'; a.href = cv.toDataURL('image/png'); a.click(); };
+// keyboard: the canvas can be focused; Space or Enter drops a stone in the middle
+cv.addEventListener('keydown', (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); rain = false; W.drop(tank, GW / 2 + (Math.random() - 0.5) * 60, GH / 2 + (Math.random() - 0.5) * 40, 4, 1.2); } });
+
+// ---- drawing
+const dark = matchMedia('(prefers-color-scheme:dark)').matches;
+const rgba = (r, g, b) => (255 << 24) | (b << 16) | (g << 8) | r;
+function draw() {
+  const { u, kind } = tank;
+  for (let i = 0; i < tank.n; i++) {
+    const k = kind[i];
+    if (k === W.WALL) { px[i] = rgba(58, 64, 72); continue; }
+    let v = u[i] * gain; v = v / (1 + Math.abs(v)); // soft clip to (-1, 1)
+    const base = k === W.SHALLOW ? [26, 110, 130] : [6, 62, 82];
+    if (v >= 0) px[i] = rgba(base[0] + (235 - base[0]) * v, base[1] + (250 - base[1]) * v, base[2] + (255 - base[2]) * v);
+    else px[i] = rgba(base[0] * (1 + v * 0.9), base[1] * (1 + v * 0.8), base[2] * (1 + v * 0.7));
+  }
+  ctx.putImageData(img, 0, 0);
+  ctx.fillStyle = '#ffd166';
+  for (const s of tank.sources) ctx.fillRect(Math.round(s.x) - 1, Math.round(s.y) - 1, 3, 3);
+  if (probe) { ctx.strokeStyle = '#ff7a59'; ctx.lineWidth = 1; ctx.strokeRect(probe[0] - 3.5, probe[1] - 3.5, 7, 7); }
+  drawScope();
+}
+function drawScope() {
+  const W_ = scope.width, H_ = scope.height; sctx.clearRect(0, 0, W_, H_);
+  sctx.strokeStyle = 'rgba(255,255,255,.25)'; sctx.beginPath(); sctx.moveTo(0, H_ / 2); sctx.lineTo(W_, H_ / 2); sctx.stroke();
+  if (!probe) return;
+  sctx.strokeStyle = '#ffd166'; sctx.lineWidth = 2; sctx.beginPath();
+  trace.forEach((v, i) => { const x = i / 600 * W_, y = H_ / 2 - Math.max(-1, Math.min(1, v * 1.2)) * (H_ / 2 - 4); i ? sctx.lineTo(x, y) : sctx.moveTo(x, y); });
+  sctx.stroke();
+}
+// ---- loop
+let acc = 0, rainClock = 0;
+function frame() {
+  if (!paused) {
+    const per = [1, 1, 2, 3, 4, 6][+$('speed').value - 1] || 2; // steps per frame
+    for (let k = 0; k < per; k++) {
+      W.stepOnce(tank);
+      if (probe) { trace.push(tank.u[probe[1] * GW + probe[0]]); if (trace.length > 600) trace.shift(); }
+      if (rain && ++rainClock % 90 === 0) W.drop(tank, 20 + Math.random() * (GW - 40), 20 + Math.random() * (GH - 40), 3 + Math.random() * 2, 1.1);
+    }
+  }
+  draw(); requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+window.__app = { get tool() { return tool; }, get probe() { return probe; }, get rain() { return rain; }, get paused() { return paused; }, get preset() { return presetKey; } };
+</script>
+</body>
+</html>
