@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lichen Garden</title>
+<style>
+:root{--bg:#1d211c;--panel:#272c25;--ink:#e6e8dc;--mute:#a1a898;--line:#3b4238;--s1:#9bbf86;--s2:#e0b85a;--s3:#8aa3d6;--accent:#c9d98a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,sans-serif}
+main{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:1.4rem;margin:.2rem 0 0;letter-spacing:.02em}
+p.sub{color:var(--mute);margin:.2rem 0 .8rem}
+#wrap{position:relative;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#171a16}
+canvas{display:block;width:100%;height:auto;aspect-ratio:1;image-rendering:pixelated;touch-action:none;cursor:crosshair}
+#when{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:.7rem 0 .2rem;flex-wrap:wrap}
+#date{font-weight:600}#season{color:var(--mute)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:.5rem 0}
+button{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:.55rem .8rem;font:inherit;cursor:pointer;min-height:44px}
+button:hover{border-color:var(--accent)}button[aria-pressed=true]{border-color:var(--accent);background:#34402d}
+.dot{display:inline-block;width:.8em;height:.8em;border-radius:50%;margin-right:.4em;vertical-align:-1px}
+#bars{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--panel);margin:.6rem 0 .2rem}
+#bars div{height:100%}
+#stats{color:var(--mute);font-size:.9rem;font-variant-numeric:tabular-nums}
+#msg{min-height:1.4em;color:var(--accent);font-size:.9rem}
+details{color:var(--mute);font-size:.92rem;margin-top:.8rem}
+a{color:var(--accent)}
+</style></head><body><main>
+<h1>Lichen Garden</h1>
+<p class="sub">Three lichens grow on one shared calendar. Come back tomorrow and it will have moved on.</p>
+<div id="wrap"><canvas id="c" width="48" height="48" aria-label="The lichen garden, a 48 by 48 grid"></canvas></div>
+<div id="when"><span id="date"></span><span id="season"></span></div>
+<input id="t" type="range" min="0" max="0" value="0" aria-label="Day">
+<div class="row">
+  <button id="play" aria-pressed="false">Play</button>
+  <button id="today">Today</button>
+  <span class="row" role="group" aria-label="Spore species" style="margin:0">
+   <button class="sp" data-k="1" aria-pressed="true"><span class="dot" style="background:var(--s1)"></span>Sage</button>
+   <button class="sp" data-k="2" aria-pressed="false"><span class="dot" style="background:var(--s2)"></span>Ochre</button>
+   <button class="sp" data-k="3" aria-pressed="false"><span class="dot" style="background:var(--s3)"></span>Slate</button>
+  </span>
+</div>
+<div id="bars"></div><div id="stats"></div><div id="msg" role="status"></div>
+<div class="row"><button id="share">Copy share link</button><button id="clear">Forget my spores</button></div>
+<details open><summary>How it works</summary>
+<p>Tap the garden on <b>today</b> to plant a spore (three a day). Drag the slider forward to see the forecast with your spores; back to see the past. A lichen spreads to empty neighbours, faster in summer; winter frost eats the exposed edges; sage beats ochre, ochre beats slate, slate beats sage when three neighbours push.</p>
+<p>Everyone shares the same world: the day count starts on 26 Nov 2026 (UTC) and the dice are a fixed hash of day and cell, so the same date gives the same garden everywhere. Only your spores are yours, saved in this browser. A year is 360 days here, midwinter about 21 December. <a href="README.md">README</a></p></details>
+</main>
+<script type="module">
+import * as L from './src/lichen.js';
+const EPOCH = Date.UTC(2026, 10, 26) / 86400000;
+const q = new URLSearchParams(location.search);
+const today = q.has('today') ? Math.max(0, +q.get('today') | 0) : Math.max(0, L.dayNumber(new Date()) - EPOCH);
+const MAXD = today + 400;
+const $ = (id) => document.getElementById(id);
+const cv = $('c'), ctx = cv.getContext('2d'), img = ctx.createImageData(48, 48);
+const COL = { 1: [155, 191, 134], 2: [224, 184, 90], 3: [138, 163, 214] };
+let spores = [], view = today, kind = 1, playing = false, timer = 0;
+const KEY = 'lichen-garden-spores';
+try { const h = new URLSearchParams(location.hash.slice(1)).get('s'); if (h) spores = L.decodeSpores(h); else spores = L.decodeSpores(localStorage.getItem(KEY) || ''); } catch { }
+const save = () => { try { localStorage.setItem(KEY, L.encodeSpores(spores)); } catch { } };
+const fmt = (d) => new Date((EPOCH + d) * 86400000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+let world = null;
+function render() {
+  if (!world || world.day > view || world.dirty) world = L.simulate(view, spores);
+  else L.simulate(view, spores, world);
+  world.dirty = false;
+  const d = img.data;
+  for (let i = 0; i < L.N; i++) {
+    const k = world.sp[i], o = i * 4;
+    if (!k) { const n = (L.mix(i, 7, 7) & 7); d[o] = 23 + n; d[o + 1] = 26 + n; d[o + 2] = 22 + n; }
+    else { const young = Math.max(0, 1 - world.age[i] / 25), f = 0.72 + 0.28 * Math.min(1, world.age[i] / 60) + young * 0.25; for (let c = 0; c < 3; c++) d[o + c] = Math.min(255, COL[k][c] * f); }
+    d[o + 3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+  const c = L.counts(world), tot = c[1] + c[2] + c[3];
+  $('date').textContent = fmt(view) + (view === today ? ' (today)' : view > today ? ' (forecast)' : ' (past)');
+  $('season').textContent = L.seasonName(view) + ', day ' + view;
+  $('t').value = view;
+  $('bars').innerHTML = [1, 2, 3].map((k) => `<div style="width:${(tot ? c[k] / tot * 100 : 0).toFixed(1)}%;background:rgb(${COL[k]})"></div>`).join('');
+  $('stats').textContent = `sage ${c[1]} · ochre ${c[2]} · slate ${c[3]} · ${(tot / L.N * 100).toFixed(0)}% covered · your spores ${spores.length}`;
+  window.__state = { view, today, counts: c, digest: L.digest(world), spores: spores.length };
+}
+const msg = (t) => { $('msg').textContent = t; };
+function setView(v) { view = Math.max(0, Math.min(MAXD, v)); render(); }
+function stop() { playing = false; clearInterval(timer); $('play').textContent = 'Play'; $('play').setAttribute('aria-pressed', 'false'); }
+function start() { playing = true; $('play').textContent = 'Pause'; $('play').setAttribute('aria-pressed', 'true'); timer = setInterval(() => { if (view >= MAXD) return stop(); setView(view + 2); }, 90); }
+$('t').max = MAXD;
+$('t').oninput = (e) => { stop(); setView(+e.target.value); };
+$('play').onclick = () => (playing ? stop() : start());
+$('today').onclick = () => { stop(); setView(today); msg(''); };
+document.querySelectorAll('.sp').forEach((b) => b.onclick = () => { kind = +b.dataset.k; document.querySelectorAll('.sp').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); });
+cv.addEventListener('pointerdown', (e) => {
+  const r = cv.getBoundingClientRect(), x = Math.floor((e.clientX - r.left) / r.width * 48), y = Math.floor((e.clientY - r.top) / r.height * 48);
+  if (view !== today) { stop(); setView(today); msg('Back on today. Tap again to plant a spore.'); return; }
+  const mine = spores.filter((s) => s.day === today);
+  if (mine.length >= L.MAX_SPORES_PER_DAY) { msg('Three spores a day. Come back tomorrow, or watch these grow.'); return; }
+  spores.push({ day: today, x, y, k: kind }); world.dirty = true; save(); render();
+  msg(`Spore planted (${L.MAX_SPORES_PER_DAY - mine.length - 1} left today). Press Play to watch it spread.`);
+});
+$('share').onclick = async () => { const u = location.href.split('#')[0] + '#s=' + L.encodeSpores(spores); try { await navigator.clipboard.writeText(u); msg('Link copied.'); } catch { location.hash = 's=' + L.encodeSpores(spores); msg('Link is in the address bar.'); } };
+$('clear').onclick = () => { spores = []; world = null; save(); history.replaceState(null, '', location.pathname + location.search); render(); msg('Spores forgotten.'); };
+window.__L = L; window.__setView = setView; window.__get = () => ({ spores, view, today });
+render();
+if (!q.has('still')) { start(); msg('Watching the forecast. Tap the garden to stop and plant.'); }
+</script></body></html>

@@ -229,6 +229,15 @@
       "url": "builds/ripple-tank/",
       "rating": 2.7,
       "status": "complete"
+    },
+    {
+      "title": "Lichen Garden",
+      "slug": "lichen-garden",
+      "date": "2026-11-26",
+      "blurb": "Three lichens grow on one shared calendar: scrub years of seasons, plant three spores a day and come back to see what became of them; checked against an independent Python re-implementation and 10 engine mutants.",
+      "url": "builds/lichen-garden/",
+      "rating": 2.5,
+      "status": "complete"
     }
   ]
 }

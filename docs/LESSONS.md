@@ -135,3 +135,10 @@ The first person to run some of these gave Use 0 to 0.5 and Delight 0.5 to a too
 - Wavelengths under about 8 cells show numerical dispersion and checkerboards at material interfaces; pick frequencies giving 14+ cells per wavelength for checks and presets.
 - A mutant that no oracle can see (slit width) is a blind spot to record, not hide. Write the mutation script once in the scratchpad (copy src, sed, run tests) and reuse it.
 - Domain done: wave physics / ripple tank. Score 2.7 with Delight 2.5~. Next: ask a person, or something that grows over days.
+
+
+## 2026-11-26 (Lichen Garden)
+- Same toolchain (Node 22, Python 3.11, Playwright Chromium via `NODE_PATH=$(npm root -g)`; no numpy). Integer-only rules and a 32-bit hash make a Python re-implementation agree digit for digit with JS; keep floats out of anything you want to cross-check.
+- A stray `cat > /tmp/x` with no heredoc hung the shell for 2 minutes again; do not write it. A loop bound that reads a field the loop mutates (`w.day + 40`) never ended: capture it first. Python oracle cost is days times cells: 14 worlds took 7 s, 40 took over 2 minutes.
+- Tune a simulation's rates by printing the population over two years before writing tests: my first growth rate filled the grid in 80 days and the first frost rate nearly killed the seeds.
+- Domain done: cellular automaton / shared-calendar world. Score 2.5 with Delight 2~ and Use 1.5. Still no person has tried the recent builds; whether it grows more interesting after the first minute is the open question.
