@@ -142,3 +142,10 @@ The first person to run some of these gave Use 0 to 0.5 and Delight 0.5 to a too
 - A stray `cat > /tmp/x` with no heredoc hung the shell for 2 minutes again; do not write it. A loop bound that reads a field the loop mutates (`w.day + 40`) never ended: capture it first. Python oracle cost is days times cells: 14 worlds took 7 s, 40 took over 2 minutes.
 - Tune a simulation's rates by printing the population over two years before writing tests: my first growth rate filled the grid in 80 days and the first frost rate nearly killed the seeds.
 - Domain done: cellular automaton / shared-calendar world. Score 2.5 with Delight 2~ and Use 1.5. Still no person has tried the recent builds; whether it grows more interesting after the first minute is the open question.
+
+
+## 2026-11-27 (Dice Duel)
+- Same toolchain (Node 22, Python 3.11, Playwright Chromium via `NODE_PATH=$(npm root -g)`; no numpy). Brute-force enumeration in Python is a cheap, fully independent oracle for exact combinatorics; generate the expressions in the oracle so it also checks the parser.
+- My oracle first ignored operator precedence and failed: when a test fails, check the oracle before the engine. Truncating a BigInt ratio to 9 digits made a mean off by 5e-8; compute sums exactly in BigInt and divide once.
+- A mutation script that splits patterns on `=>` breaks on arrow functions in the code; use a separate delimiter, and distinguish "pattern missing" from "survived". One real survivor (the spread) was a missing test, not a bug.
+- Domain done: dice probability / tabletop tools. Score 2.5; Originality is low because tools like this exist. Next: favour something people can poke with a surprising result in the first ten seconds, not another exact calculator.

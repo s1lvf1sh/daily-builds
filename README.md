@@ -17,6 +17,7 @@ One small, finished thing, designed and built each day by Claude, with notes on 
 
 | Date | Project | What it is | Rating |
 |---|---|---|---|
+| 27 Nov 2026 | [Dice Duel](builds/dice-duel/) | Two dice expressions go head to head: exact win, tie and loss odds, distributions and target chances, checked against an independent brute-force enumeration of 360 expressions and 15 engine mutants | 2.5 |
 | 26 Nov 2026 | [Lichen Garden](builds/lichen-garden/) | Three lichens grow on one shared calendar: scrub years of seasons, plant three spores a day and come back to see what became of them; checked against an independent Python re-implementation and 10 engine mutants. | 2.5 |
 | 25 Nov 2026 | [Ripple Tank](builds/ripple-tank/) | A tank of water to poke: drop stones, draw walls and shallow patches and watch waves reflect, bend and interfere; checked against independent physics oracles including two-source double-slit fringes | 2.7 |
 | 24 Nov 2026 | [Tile Shifter](builds/tile-shifter/) | Drag a dot on a tile and its twin edge moves too, so the plane stays tiled; breathing mode, SVG export and share links, checked against an independent winding-number coverage oracle | 2.8 |

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dice Duel</title>
+<style>
+:root{--bg:#f6f3ec;--ink:#22201c;--mut:#6b655a;--card:#fffdf8;--line:#ddd6c6;--a:#1f6f8b;--b:#d2691e;--tie:#9a9486;--bad:#b3261e}
+@media(prefers-color-scheme:dark){:root{--bg:#191815;--ink:#ece7dc;--mut:#a39d90;--card:#23211d;--line:#3a3730;--a:#5bb4d4;--b:#f0955a;--tie:#85806f;--bad:#ff8a80}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,sans-serif}
+main{max-width:860px;margin:0 auto;padding:16px}
+h1{font-size:1.5rem;margin:.2em 0}p.sub{margin:0 0 1em;color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin:12px 0}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+label.side{font-weight:700;width:1.6em}
+input[type=text]{flex:1 1 220px;font:1.1rem ui-monospace,monospace;padding:8px 10px;border-radius:8px;border:2px solid var(--line);background:var(--bg);color:var(--ink);min-width:0}
+input.a{border-color:var(--a)}input.b{border-color:var(--b)}input.err{border-color:var(--bad)}
+.err-msg{color:var(--bad);font-size:.9rem;min-height:1.2em;margin:2px 0 0 2.2em}
+.st{color:var(--mut);font-size:.9rem;margin:2px 0 8px 2.2em}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+button{font:inherit;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+button:hover,button:focus-visible{border-color:var(--ink)}button.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+#bar{display:flex;height:34px;border-radius:8px;overflow:hidden;margin:8px 0;font-size:.9rem;font-weight:600;color:#fff}
+#bar div{display:flex;align-items:center;justify-content:center;min-width:0;white-space:nowrap;overflow:hidden}
+#headline{font-size:1.2rem;font-weight:700}
+svg{width:100%;height:auto;display:block}svg text{fill:var(--mut);font-size:11px}
+.legend{font-size:.9rem;color:var(--mut)}.dot{display:inline-block;width:.8em;height:.8em;border-radius:2px;margin-right:4px}
+table{border-collapse:collapse;width:100%;font-size:.9rem}td,th{padding:3px 6px;text-align:right;border-bottom:1px solid var(--line)}th:first-child,td:first-child{text-align:left}
+input[type=range]{width:100%}
+.mut{color:var(--mut);font-size:.9rem}
+</style></head><body><main>
+<h1>Dice Duel</h1>
+<p class="sub">Type two dice expressions and see, exactly, which one wins and how often. Try <code>2d20kh1+5</code> against <code>d20+10</code>.</p>
+
+<div class="card">
+ <div class="row"><label class="side" style="color:var(--a)" for="ea">A</label><input id="ea" class="a" type="text" autocomplete="off" spellcheck="false" aria-describedby="sa"></div>
+ <div class="err-msg" id="erra" role="alert"></div><div class="st" id="sa"></div>
+ <div class="row"><label class="side" style="color:var(--b)" for="eb">B</label><input id="eb" class="b" type="text" autocomplete="off" spellcheck="false" aria-describedby="sb"></div>
+ <div class="err-msg" id="errb" role="alert"></div><div class="st" id="sb"></div>
+ <div class="chips" id="presets" aria-label="Examples"></div>
+</div>
+
+<div class="card" id="result">
+ <div id="headline" aria-live="polite"></div>
+ <div id="bar" role="img" aria-label="Win share"></div>
+ <div class="mut" id="exact"></div>
+</div>
+
+<div class="card">
+ <svg id="chart" viewBox="0 0 800 260" role="img" aria-label="Probability of each total"></svg>
+ <div class="legend"><span class="dot" style="background:var(--a)"></span>A <span class="dot" style="background:var(--b);margin-left:12px"></span>B</div>
+</div>
+
+<div class="card">
+ <div class="row"><b>Need a total of at least</b> <output id="tv" style="font-weight:700;min-width:2.5em"></output></div>
+ <input type="range" id="target" aria-label="Target total" min="0" max="20" value="10">
+ <table><thead><tr><th></th><th>P(total ≥ target)</th><th>one in…</th></tr></thead><tbody id="tt"></tbody></table>
+</div>
+
+<div class="card">
+ <div class="row"><button class="pri" id="roll1">Roll once</button><button id="roll1k">Roll 1000 duels</button><button id="reset">Clear tally</button></div>
+ <div id="rollout" style="margin-top:8px" aria-live="polite"></div>
+ <div class="mut" id="tally"></div>
+</div>
+<p class="mut">Syntax: <code>NdM</code>, <code>d%</code>, keep/drop with <code>kh kl dh dl</code> (<code>4d6dl1</code> drops the lowest, <code>2d20kh1</code> is advantage), plus <code>+ - *</code> and parentheses. Exact counts, not simulation. The link in your address bar remembers your two expressions.</p>
+</main>
+<script src="src/dice.js"></script>
+<script>
+(function(){
+const $=(i)=>document.getElementById(i);
+const PRESETS=[["Advantage vs flat bonus","2d20kh1+5","d20+10"],["Great weapons","2d6+4","d12+4"],["Roll for stats","4d6dl1","3d6"],["Crit fisher","3d6","d20"],["Fireball vs focus","8d6","6d8+3"],["Two dice vs one","2d10","d20"]];
+const q=new URLSearchParams(location.hash.slice(1));
+$("ea").value=q.get("a")||"2d20kh1+5";$("eb").value=q.get("b")||"d20+10";
+let A=null,B=null,tally={w:0,t:0,l:0};
+const f=(x,n=1)=>(x*100).toFixed(n)+"%";
+function stat(d){const s=Dice.stats(d);return `mean ${s.mean.toFixed(2)} · spread ±${s.sd.toFixed(2)} · range ${s.min} to ${s.max}`}
+function side(id,errid,stid){const el=$(id);try{const d=Dice.parse(el.value);el.classList.remove("err");$(errid).textContent="";$(stid).textContent=stat(d);return d}
+ catch(e){el.classList.add("err");$(errid).textContent=e.message;$(stid).textContent="";return null}}
+function chart(){const svg=$("chart");if(!A||!B){svg.innerHTML="";return}
+ const sa=Dice.stats(A),sb=Dice.stats(B);const lo=Math.min(sa.min,sb.min),hi=Math.max(sa.max,sb.max);const span=hi-lo+1;
+ const W=800,H=260,L=36,R=8,T=8,Bt=28,pw=W-L-R,ph=H-T-Bt;
+ const pa=new Map(sa.pr.map(x=>[x[0],x[1]])),pb=new Map(sb.pr.map(x=>[x[0],x[1]]));
+ let mx=0;for(const v of pa.values())mx=Math.max(mx,v);for(const v of pb.values())mx=Math.max(mx,v);mx=mx||1;
+ const bw=pw/span;let o="";
+ for(let k=0;k<=4;k++){const y=T+ph-ph*k/4;o+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="${L-4}" y="${y+4}" text-anchor="end">${f(mx*k/4,mx<.1?1:0)}</text>`}
+ const half=Math.max(1,bw*.42);
+ for(let v=lo;v<=hi;v++){const x=L+(v-lo)*bw;const ha=(pa.get(v)||0)/mx*ph,hb=(pb.get(v)||0)/mx*ph;
+  if(ha>0)o+=`<rect x="${x+bw*.08}" y="${T+ph-ha}" width="${half}" height="${ha}" fill="var(--a)" opacity=".85"><title>A=${v}: ${f(pa.get(v),2)}</title></rect>`;
+  if(hb>0)o+=`<rect x="${x+bw*.08+half}" y="${T+ph-hb}" width="${half}" height="${hb}" fill="var(--b)" opacity=".85"><title>B=${v}: ${f(pb.get(v),2)}</title></rect>`}
+ const step=Math.max(1,Math.ceil(span/16));
+ for(let v=lo;v<=hi;v+=step)o+=`<text x="${L+(v-lo+.5)*bw}" y="${H-10}" text-anchor="middle">${v}</text>`;
+ svg.innerHTML=o}
+function table(){if(!A||!B){$("tt").innerHTML="";return}
+ const sa=Dice.stats(A),sb=Dice.stats(B),lo=Math.min(sa.min,sb.min),hi=Math.max(sa.max,sb.max),t=$("target");
+ t.min=lo;t.max=hi;if(+t.value<lo||+t.value>hi)t.value=Math.round((sa.mean+sb.mean)/2);$("tv").textContent=t.value;
+ const row=(n,c,d)=>{const p=Dice.atLeast(d,+t.value);return `<tr><td style="color:${c}"><b>${n}</b></td><td>${f(p,2)}</td><td>${p>0?"1 in "+(1/p<10?(1/p).toFixed(2):Math.round(1/p)):"never"}</td></tr>`};
+ $("tt").innerHTML=row("A","var(--a)",A)+row("B","var(--b)",B)}
+function update(){A=side("ea","erra","sa");B=side("eb","errb","sb");
+ try{history.replaceState(null,"","#a="+encodeURIComponent($("ea").value)+"&b="+encodeURIComponent($("eb").value))}catch(e){}
+ if(A&&B){const d=Dice.duel(A,B);
+  const lead=d.pGt>d.pLt?"A":d.pLt>d.pGt?"B":null;
+  $("headline").textContent=lead?`${lead} wins more often: ${f(Math.max(d.pGt,d.pLt))} against ${f(Math.min(d.pGt,d.pLt))}${d.pEq>0?`, ties ${f(d.pEq)}`:""}`:`Dead even: ${f(d.pGt)} each${d.pEq>0?`, ties ${f(d.pEq)}`:""}`;
+  const seg=(p,c,n)=>p>0?`<div style="width:${p*100}%;background:${c}">${p>.07?n+" "+f(p):""}</div>`:"";
+  $("bar").innerHTML=seg(d.pGt,"var(--a)","A")+seg(d.pEq,"var(--tie)","tie")+seg(d.pLt,"var(--b)","B");
+  $("exact").textContent=`Exactly ${d.gt} + ${d.eq} + ${d.lt} out of ${d.T} equally likely outcomes.`;
+  window.__state={a:$("ea").value,b:$("eb").value,gt:d.gt.toString(),eq:d.eq.toString(),lt:d.lt.toString(),T:d.T.toString(),meanA:Dice.stats(A).mean,meanB:Dice.stats(B).mean,error:false}}
+ else{$("headline").textContent="Fix the expression to see the duel";$("bar").innerHTML="";$("exact").textContent="";window.__state={error:true}}
+ chart();table()}
+function rollOnce(){if(!(A&&B))return null;const x=Dice.sample(A,Math.random),y=Dice.sample(B,Math.random);return [x,y]}
+function show(){const n=tally.w+tally.t+tally.l;$("tally").textContent=n?`Tally of ${n}: A ${tally.w} · tie ${tally.t} · B ${tally.l}`+(n>=100&&A&&B?` (${f(tally.w/n)} / ${f(tally.t/n)} / ${f(tally.l/n)})`:""):""}
+function add(x,y){if(x>y)tally.w++;else if(x===y)tally.t++;else tally.l++}
+$("roll1").onclick=()=>{const r=rollOnce();if(!r){return}add(r[0],r[1]);$("rollout").innerHTML=`<b style="color:var(--a)">A ${r[0]}</b> against <b style="color:var(--b)">B ${r[1]}</b>: ${r[0]>r[1]?"A wins":r[0]<r[1]?"B wins":"tie"}`;show()};
+$("roll1k").onclick=()=>{if(!(A&&B))return;for(let i=0;i<1000;i++){const r=rollOnce();add(r[0],r[1])}$("rollout").textContent="Rolled 1000 duels. Compare the tally with the exact bar above.";show()};
+$("reset").onclick=()=>{tally={w:0,t:0,l:0};$("rollout").textContent="";show()};
+$("ea").oninput=$("eb").oninput=()=>{tally={w:0,t:0,l:0};show();update()};
+$("target").oninput=table;
+for(const [n,a,b] of PRESETS){const bt=document.createElement("button");bt.textContent=n;bt.title=a+" vs "+b;bt.onclick=()=>{$("ea").value=a;$("eb").value=b;$("ea").oninput()};$("presets").appendChild(bt)}
+window.Dice=Dice;update();
+})();
+</script></body></html>

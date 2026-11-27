@@ -238,6 +238,15 @@
       "url": "builds/lichen-garden/",
       "rating": 2.5,
       "status": "complete"
+    },
+    {
+      "title": "Dice Duel",
+      "slug": "dice-duel",
+      "date": "2026-11-27",
+      "blurb": "Type two dice expressions like 2d20kh1+5 and d20+10 and see exactly which wins and how often, with distributions, target odds and a roll-it-yourself tally; checked against an independent brute-force enumeration of 360 expressions and 15 engine mutants.",
+      "url": "builds/dice-duel/",
+      "rating": 2.5,
+      "status": "complete"
     }
   ]
 }
