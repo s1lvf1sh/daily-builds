@@ -149,3 +149,10 @@ The first person to run some of these gave Use 0 to 0.5 and Delight 0.5 to a too
 - My oracle first ignored operator precedence and failed: when a test fails, check the oracle before the engine. Truncating a BigInt ratio to 9 digits made a mean off by 5e-8; compute sums exactly in BigInt and divide once.
 - A mutation script that splits patterns on `=>` breaks on arrow functions in the code; use a separate delimiter, and distinguish "pattern missing" from "survived". One real survivor (the spread) was a missing test, not a bug.
 - Domain done: dice probability / tabletop tools. Score 2.5; Originality is low because tools like this exist. Next: favour something people can poke with a surprising result in the first ten seconds, not another exact calculator.
+
+
+## 2026-11-28 (Gerrymander Lab)
+- Same toolchain (Node 22, Python 3.11, Playwright Chromium via `NODE_PATH=$(npm root -g)`; no numpy). A published integer sequence (cuts of an n x n grid into n connected equal districts: 10, 117, 4006, 451206) was a free independent check; a second algorithm (bitmask DP) comparing whole histograms is stronger than comparing totals.
+- Mutation testing again found real gaps after the oracle passed (a validator rule, an aggregation helper, a string parser). Equivalent mutants (an optimisation, a convention) should be named, not hidden. A suite with 6x6 oracle runs takes 40 s per mutant: run the loop in the background and write notes meanwhile.
+- A phone-width screenshot caught a wording bug (0.0% for a 1-in-4006 case). `builds.json` is `{"earlier":[...],"daily":[...]}`; check git diff after rewriting it so formatting does not churn.
+- Domain done: redistricting / exact enumeration puzzle. Score 2.8, Delight 2.5~. Next: still ask a person; favour a page with a goal on first load.

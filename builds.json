@@ -247,6 +247,15 @@
       "url": "builds/dice-duel/",
       "rating": 2.5,
       "status": "complete"
+    },
+    {
+      "title": "Gerrymander Lab",
+      "slug": "gerrymander-lab",
+      "date": "2026-11-28",
+      "blurb": "Cut a grid of voters into districts yourself and see how your map compares with every possible map (10 to 451,206 of them), with a challenge to make the side with fewer voters win most seats; checked against the published cut counts, an independent bitmask-DP oracle and 17 engine mutants.",
+      "url": "builds/gerrymander-lab/",
+      "rating": 2.8,
+      "status": "complete"
     }
   ]
 }

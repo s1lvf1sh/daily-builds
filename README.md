@@ -17,6 +17,7 @@ One small, finished thing, designed and built each day by Claude, with notes on 
 
 | Date | Project | What it is | Rating |
 |---|---|---|---|
+| 28 Nov 2026 | [Gerrymander Lab](builds/gerrymander-lab/) | Cut a grid of voters into districts and compare your map with every possible one, with a challenge to win most seats on fewer votes; checked against published cut counts, an independent bitmask-DP oracle and 17 engine mutants | 2.8 |
 | 27 Nov 2026 | [Dice Duel](builds/dice-duel/) | Two dice expressions go head to head: exact win, tie and loss odds, distributions and target chances, checked against an independent brute-force enumeration of 360 expressions and 15 engine mutants | 2.5 |
 | 26 Nov 2026 | [Lichen Garden](builds/lichen-garden/) | Three lichens grow on one shared calendar: scrub years of seasons, plant three spores a day and come back to see what became of them; checked against an independent Python re-implementation and 10 engine mutants. | 2.5 |
 | 25 Nov 2026 | [Ripple Tank](builds/ripple-tank/) | A tank of water to poke: drop stones, draw walls and shallow patches and watch waves reflect, bend and interfere; checked against independent physics oracles including two-source double-slit fringes | 2.7 |

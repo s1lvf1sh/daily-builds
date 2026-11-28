@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gerrymander Lab</title>
+<style>
+:root{--bg:#f6f3ec;--ink:#22201c;--mut:#6b655a;--card:#fffdf8;--line:#ddd6c6;--a:#d2691e;--b:#1f6f8b;--bad:#b3261e;--good:#2e7d32;--d0:#f4e3b5;--d1:#cfe6d4;--d2:#d9d2f0;--d3:#f3cfd3;--d4:#cfe3ee;--d5:#e5e0d0;--edge:#22201c}
+@media(prefers-color-scheme:dark){:root{--bg:#191815;--ink:#ece7dc;--mut:#a39d90;--card:#23211d;--line:#3a3730;--a:#f0955a;--b:#5bb4d4;--bad:#ff8a80;--good:#81c784;--d0:#5a4d25;--d1:#2f4d38;--d2:#443d66;--d3:#5e3439;--d4:#2c4a5c;--d5:#4a463a;--edge:#ece7dc}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,sans-serif}
+main{max-width:940px;margin:0 auto;padding:16px}
+h1{font-size:1.5rem;margin:.2em 0}p.sub{margin:0 0 .6em;color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin:12px 0}
+.wrap{display:flex;gap:16px;flex-wrap:wrap}.left{flex:1 1 340px;max-width:460px}.right{flex:1 1 300px;min-width:0}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0}
+button,select{font:inherit;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+button:hover,button:focus-visible,select:focus-visible{border-color:var(--ink)}button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.sw{display:inline-block;width:.9em;height:.9em;border-radius:3px;border:1px solid var(--edge);vertical-align:-1px;margin-right:4px}
+svg#grid{width:100%;height:auto;display:block;touch-action:none;user-select:none;border-radius:8px}
+#headline{font-size:1.25rem;font-weight:700;margin:0 0 4px}
+#seatbar{display:flex;height:28px;border-radius:8px;overflow:hidden;margin:6px 0;font-weight:700;color:#fff;background:var(--line)}
+#seatbar div{display:flex;align-items:center;justify-content:center;white-space:nowrap}
+.mut{color:var(--mut);font-size:.9rem}.bad{color:var(--bad)}.good{color:var(--good);font-weight:700}
+table{border-collapse:collapse;width:100%;font-size:.9rem}td,th{padding:3px 6px;text-align:right;border-bottom:1px solid var(--line)}th:first-child,td:first-child{text-align:left}
+svg#hist{width:100%;height:auto;display:block}svg#hist text{fill:var(--mut);font-size:11px}
+#goal{border-left:4px solid var(--a);padding:4px 10px;margin:8px 0}
+</style></head><body><main>
+<h1>Gerrymander Lab</h1>
+<p class="sub">The same voters, cut into districts in different ways, can elect different winners. Draw the districts, then see how your map compares with <em>every</em> possible one.</p>
+<div class="card wrap">
+ <div class="left">
+  <div class="row"><label>Grid <select id="size" aria-label="grid size"><option>3</option><option>4</option><option selected>5</option><option>6</option></select></label>
+   <span class="mut" id="sizeNote"></span></div>
+  <div class="row" id="tools" role="group" aria-label="tools"></div>
+  <svg id="grid" role="img" aria-label="voter grid"></svg>
+  <div class="row"><span class="mut">Voters:</span><button id="rnd">Shuffle voters</button>
+   <select id="share" aria-label="share of orange voters"><option>30</option><option selected>40</option><option>50</option><option>60</option></select><span class="mut">% orange</span>
+   <button id="city">City vs country</button><button id="scatter">Scattered</button></div>
+  <div class="row"><span class="mut">Districts:</span><button id="stripes">Stripes</button><button id="clear">Clear</button><button id="copy">Copy link</button></div>
+ </div>
+ <div class="right">
+  <p id="headline">…</p>
+  <div id="seatbar"></div>
+  <div id="goal"></div>
+  <table id="dtable"></table>
+  <p class="mut" id="msg" role="status"></p>
+ </div>
+</div>
+<div class="card">
+ <h2 style="margin:0 0 4px;font-size:1.1rem">Every possible map</h2>
+ <p class="mut" id="allnote"></p>
+ <div class="row"><button id="bestA"></button><button id="bestB"></button><button id="worstA"></button><button id="count" hidden>Count every map</button></div>
+ <svg id="hist" role="img" aria-label="how many maps give each seat result"></svg>
+</div>
+<p class="mut">A district is a connected group of exactly as many cells as the grid is wide. Wins go to the majority in a district; in an even-sized district a tie gives the seat to nobody. Tool tip: switch to a district colour and drag over cells to paint; <em>Voters</em> flips a cell's party.</p>
+<script type="module">
+import { analyse, judge, parseVotes, votesToString, neighbours } from './src/gerry.js';
+const $ = (id) => document.getElementById(id);
+const NS = 'http://www.w3.org/2000/svg';
+const NAME = { A: 'Orange', B: 'Teal' };
+let n = 5, votes = [], assign = [], tool = 'vote', info = null, key = '', painting = null;
+const fmt = (x) => x.toLocaleString('en-GB');
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+
+function cityVsCountry() { const k = Math.round(0.4 * n * n), v = Array(n * n).fill(0); let c = 0; for (let col = 0; col < n; col++) for (let r = 0; r < n && c < k; r++, c++) v[r * n + col] = 1; return v; }
+function scattered() { return Array.from({ length: n * n }, (_, i) => (((i / n | 0) * 2 + (i % n) * 3) % 5 < 2 ? 1 : 0)); }
+function shuffled(pct) { const k = Math.round(pct / 100 * n * n), v = Array(n * n).fill(0).map((_, i) => (i < k ? 1 : 0)); for (let i = v.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [v[i], v[j]] = [v[j], v[i]]; } return v; }
+const stripes = () => Array.from({ length: n * n }, (_, i) => (i / n | 0));
+const blank = () => Array(n * n).fill(-1);
+
+function buildTools() {
+  const t = $('tools'); t.innerHTML = '';
+  const add = (id, html, label) => { const b = document.createElement('button'); b.innerHTML = html; b.dataset.tool = id; b.setAttribute('aria-pressed', id === tool); b.setAttribute('aria-label', label); b.onclick = () => { tool = id; buildTools(); }; t.appendChild(b); };
+  add('vote', 'Voters', 'tool: flip voters');
+  for (let d = 0; d < n; d++) add('d' + d, `<span class="sw" style="background:var(--d${d})"></span>${d + 1}`, 'paint district ' + (d + 1));
+  add('erase', 'Erase', 'tool: erase district');
+}
+
+function draw() {
+  const g = $('grid'), S = 60, W = n * S; g.setAttribute('viewBox', `0 0 ${W} ${W}`); g.innerHTML = '';
+  for (let i = 0; i < n * n; i++) {
+    const r = i / n | 0, c = i % n, d = assign[i];
+    el('rect', { x: c * S, y: r * S, width: S, height: S, fill: d < 0 ? 'var(--card)' : `var(--d${d})`, stroke: 'var(--line)', 'stroke-width': 0.6 }, g);
+    el('circle', { cx: c * S + S / 2, cy: r * S + S / 2, r: S * 0.26, fill: votes[i] ? 'var(--a)' : 'var(--b)', 'pointer-events': 'none' }, g);
+  }
+  for (let i = 0; i < n * n; i++) { // thick borders where district ids differ, and around the outside
+    const r = i / n | 0, c = i % n, x = c * S, y = r * S, line = (x1, y1, x2, y2) => el('line', { x1, y1, x2, y2, stroke: 'var(--edge)', 'stroke-width': 3, 'stroke-linecap': 'round', 'pointer-events': 'none' }, g);
+    if (c < n - 1 && assign[i] !== assign[i + 1]) line(x + S, y, x + S, y + S);
+    if (r < n - 1 && assign[i] !== assign[i + n]) line(x, y + S, x + S, y + S);
+  }
+  el('rect', { x: 0, y: 0, width: W, height: W, fill: 'none', stroke: 'var(--edge)', 'stroke-width': 3, 'pointer-events': 'none' }, g);
+}
+
+function seatText(j) { return j.seatsA + ' to ' + NAME.A + ', ' + j.seatsB + ' to ' + NAME.B; }
+
+function render() {
+  draw();
+  const a = votes.reduce((s, v) => s + v, 0), N = n * n, pct = Math.round(100 * a / N);
+  const j = judge(n, votes, assign);
+  const dt = $('dtable');
+  dt.innerHTML = '<tr><th>District</th><th>Cells</th><th>Orange</th><th>Teal</th><th>Winner</th></tr>' +
+    j.sizes.map((s, d) => `<tr><td><span class="sw" style="background:var(--d${d})"></span>${d + 1}</td><td class="${s === n && j.connected[d] ? '' : 'bad'}">${s}/${n}${s && !j.connected[d] ? ' split' : ''}</td><td>${s ? j.aVotes[d] : '–'}</td><td>${s ? s - j.aVotes[d] : '–'}</td><td>${s === n && j.connected[d] ? (j.win[d] === 'T' ? 'tie' : NAME[j.win[d]]) : '–'}</td></tr>`).join('');
+  const bar = $('seatbar'); bar.innerHTML = '';
+  if (j.valid) {
+    const seg = (c, k) => { if (k) { const d = document.createElement('div'); d.style.cssText = `flex:${k};background:var(--${c})`; d.textContent = k; bar.appendChild(d); } };
+    seg('a', j.seatsA); seg('b', j.seatsB);
+    $('headline').textContent = `Orange has ${pct}% of the voters and wins ${j.seatsA} of ${n} seats.`;
+  } else {
+    $('headline').textContent = `Orange has ${pct}% of the voters.`;
+    const m = j.unassigned ? `${j.unassigned} cell${j.unassigned > 1 ? 's' : ''} still need a district.` : 'Every district needs exactly ' + n + ' cells, all touching.';
+    bar.innerHTML = ''; $('msg').textContent = m;
+  }
+  if (j.valid) $('msg').textContent = '';
+  const goal = $('goal');
+  if (info) {
+    const minority = a * 2 < N ? 'A' : a * 2 > N ? 'B' : null;
+    if (!minority) goal.textContent = 'The voters are split evenly. Can you give either side a majority of seats?';
+    else {
+      const maj = minority === 'A' ? 'Teal' : 'Orange', min = NAME[minority], best = minority === 'A' ? info.maxA.a : info.maxB.b;
+      const need = Math.floor(n / 2) + 1;
+      if (j.valid && (minority === 'A' ? j.seatsA : j.seatsB) >= need) goal.innerHTML = `<span class="good">Done.</span> ${min} has fewer voters but ${minority === 'A' ? j.seatsA : j.seatsB} of ${n} seats.`;
+      else goal.textContent = best >= need ? `Challenge: ${min} has fewer voters (${minority === 'A' ? pct : 100 - pct}%). Cut the map so ${min} wins ${need} or more seats. It can be done.` : `Challenge: ${min} has fewer voters. On this arrangement no cut gives it a majority of seats (best is ${best}).`;
+    }
+  } else goal.textContent = '';
+  renderAll(j);
+  history.replaceState(null, '', location.pathname + '#' + share());
+}
+
+function renderAll(j) {
+  const h = $('hist'); h.innerHTML = '';
+  const bA = $('bestA'), bB = $('bestB'), wA = $('worstA');
+  if (!info) { $('allnote').textContent = n === 6 ? 'There are 451,206 ways to cut a 6×6 grid. Counting them all takes about two seconds.' : ''; bA.hidden = bB.hidden = wA.hidden = true; $('count').hidden = n !== 6; return; }
+  $('count').hidden = true; bA.hidden = bB.hidden = wA.hidden = false;
+  $('allnote').textContent = `This grid can be cut ${fmt(info.total)} ways into ${n} connected districts of ${n}. Each bar counts the maps that give Orange that many seats.`;
+  bA.textContent = `Best for Orange (${info.maxA.a} seats)`; bB.textContent = `Best for Teal (${info.maxB.b} seats)`; wA.textContent = `Worst for Orange (${info.minA.a} seats)`;
+  const seats = Array.from({ length: n + 1 }, (_, k) => info.bySeatsA[k] || 0), mx = Math.max(...seats);
+  const W = 420, H = 130, bw = W / (n + 1);
+  h.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  seats.forEach((c, k) => {
+    const bh = c ? Math.max(2, (c / mx) * 80) : 0, x = k * bw + 6;
+    const cur = j.valid && j.seatsA === k;
+    el('rect', { x, y: 95 - bh, width: bw - 12, height: bh, fill: 'var(--a)', opacity: cur ? 1 : 0.55, stroke: cur ? 'var(--edge)' : 'none', 'stroke-width': 2 }, h);
+    const t1 = el('text', { x: x + (bw - 12) / 2, y: 109, 'text-anchor': 'middle' }, h); t1.textContent = k;
+    if (c) { const t2 = el('text', { x: x + (bw - 12) / 2, y: 90 - bh, 'text-anchor': 'middle' }, h); t2.textContent = fmt(c); }
+  });
+  const t3 = el('text', { x: W / 2, y: 125, 'text-anchor': 'middle' }, h); t3.textContent = 'seats won by Orange (outlined bar = your map)';
+  if (j.valid) {
+    const worse = seats.slice(0, j.seatsA).reduce((s, c) => s + c, 0), same = seats[j.seatsA];
+    const pc = (c) => (c === 0 ? 'none' : c * 1000 < info.total ? `${fmt(c)} (under 0.1%)` : `${fmt(c)} (${(100 * c / info.total).toFixed(1)}%)`);
+    $('allnote').textContent += ` Your map gives Orange ${j.seatsA}. Maps giving Orange fewer: ${pc(worse)}. The same: ${pc(same)}.`;
+  }
+}
+
+function recompute(force) {
+  const k = n + ':' + votesToString(votes);
+  if (k === key && info) return;
+  if (n === 6 && !force) { info = null; key = ''; return; }
+  info = analyse(n, votes); key = k;
+}
+function share() { return `n=${n}&v=${votesToString(votes)}&a=${assign.map((d) => (d < 0 ? '.' : d)).join('')}`; }
+function load(hash) {
+  const p = new URLSearchParams(hash.replace(/^#/, '')), nn = +p.get('n');
+  if (![3, 4, 5, 6].includes(nn)) return false;
+  const v = parseVotes(p.get('v') || '', nn), a = p.get('a') || '';
+  if (!v || a.length !== nn * nn || /[^.0-9]/.test(a)) return false;
+  const as = Array.from(a, (ch) => (ch === '.' ? -1 : +ch)); if (as.some((d) => d >= nn)) return false;
+  n = nn; votes = v; assign = as; $('size').value = n; return true;
+}
+function setSize(k) { n = k; votes = cityVsCountry(); assign = stripes(); tool = 'vote'; buildTools(); info = null; key = ''; }
+function update(force) { recompute(force); render(); }
+
+function cellAt(ev) { const g = $('grid'), r = g.getBoundingClientRect(), x = (ev.clientX - r.left) / r.width, y = (ev.clientY - r.top) / r.height; if (x < 0 || y < 0 || x >= 1 || y >= 1) return -1; return (y * n | 0) * n + (x * n | 0); }
+function apply(i) {
+  if (i < 0) return;
+  if (tool === 'vote') { if (votes[i] === painting) return; votes[i] = painting; update(); }
+  else { const d = tool === 'erase' ? -1 : +tool.slice(1); if (assign[i] === d) return; assign[i] = d; render(); }
+}
+const grid = $('grid');
+grid.addEventListener('pointerdown', (e) => { const i = cellAt(e); if (i < 0) return; grid.setPointerCapture(e.pointerId); painting = tool === 'vote' ? 1 - votes[i] : 0; apply(i); });
+grid.addEventListener('pointermove', (e) => { if (painting === null || !(e.buttons || e.pointerType === 'touch')) return; apply(cellAt(e)); });
+const stop = () => { painting = null; }; grid.addEventListener('pointerup', stop); grid.addEventListener('pointercancel', stop);
+
+$('size').onchange = (e) => { setSize(+e.target.value); update(); };
+$('rnd').onclick = () => { votes = shuffled(+$('share').value); update(); };
+$('city').onclick = () => { votes = cityVsCountry(); update(); };
+$('scatter').onclick = () => { votes = scattered(); update(); };
+$('stripes').onclick = () => { assign = stripes(); render(); };
+$('clear').onclick = () => { assign = blank(); render(); };
+$('count').onclick = () => { $('msg').textContent = 'Counting…'; setTimeout(() => { update(true); }, 30); };
+$('bestA').onclick = () => { assign = info.maxA.assign.slice(); render(); };
+$('bestB').onclick = () => { assign = info.maxB.assign.slice(); render(); };
+$('worstA').onclick = () => { assign = info.minA.assign.slice(); render(); };
+$('copy').onclick = async () => { try { await navigator.clipboard.writeText(location.href); $('msg').textContent = 'Link copied.'; } catch { $('msg').textContent = 'Copy the address bar to share this map.'; } };
+if (!load(location.hash)) setSize(5);
+buildTools(); update();
+window.__lab = { state: () => ({ n, votes: votes.slice(), assign: assign.slice(), info }) };
+</script></main></body></html>
